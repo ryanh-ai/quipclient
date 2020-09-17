@@ -5,6 +5,7 @@ setup(
   version = '0.1',
   license='apache-2.0',
   description = 'Quip API Python Client',
+  long_description = 'Quip API Python Client',
   author = 'David Wright',
   author_email = 'david_v_wright@yahoo.com',
   url = 'https://github.com/dvwright/quipclient',
