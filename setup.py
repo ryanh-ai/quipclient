@@ -8,7 +8,7 @@ setup(
   author = 'David Wright',
   author_email = 'david_v_wright@yahoo.com',
   url = 'https://github.com/dvwright/quipclient',
-  download_url = 'https://github.com/user/reponame/archive/v_01.tar.gz',    # I explain this later on
+  download_url = 'https://github.com/dvwright/quipclient/archive/v0.1.tar.gz',
   keywords = ['Quip', 'API', 'Python'],
   #install_requires=[],
   classifiers=[
