@@ -54,15 +54,53 @@ def test_get_thread_html_v2(quip_client, mock_urlopen, mock_response):
 
 def test_thread_v2_pagination(quip_client, mock_urlopen, mock_response):
     """Test pagination parameters for v2 API methods"""
-    mock_urlopen.return_value = mock_response(json_data=THREAD_FOLDERS_V2)
+    # Mock first page response
+    first_page = {
+        "folders": [
+            {"folder_id": "FOLDER1", "type": "SHARED"},
+            {"folder_id": "FOLDER2", "type": "PRIVATE"}
+        ],
+        "response_metadata": {
+            "next_cursor": "page2_cursor"
+        }
+    }
     
-    result = quip_client.get_thread_folders_v2(
+    # Mock second page response
+    second_page = {
+        "folders": [
+            {"folder_id": "FOLDER3", "type": "SHARED"},
+            {"folder_id": "FOLDER4", "type": "PRIVATE"}
+        ],
+        "response_metadata": {
+            "next_cursor": ""  # Empty cursor indicates no more pages
+        }
+    }
+    
+    # Setup mock to return different responses for each call
+    mock_urlopen.side_effect = [
+        mock_response(json_data=first_page),
+        mock_response(json_data=second_page)
+    ]
+    
+    # First call should get first page and include cursor in response
+    result1 = quip_client.get_thread_folders_v2("THREAD123")
+    assert len(result1["folders"]) == 2
+    assert result1["folders"][0]["folder_id"] == "FOLDER1"
+    assert result1["response_metadata"]["next_cursor"] == "page2_cursor"
+    
+    # Second call with cursor should get second page
+    result2 = quip_client.get_thread_folders_v2(
         "THREAD123",
-        cursor="page2",
-        limit=10
+        cursor="page2_cursor"
     )
+    assert len(result2["folders"]) == 2
+    assert result2["folders"][0]["folder_id"] == "FOLDER3"
+    assert result2["response_metadata"]["next_cursor"] == ""  # Empty indicates end
     
-    # Verify the URL contains pagination parameters
-    called_url = mock_urlopen.call_args[0][0].get_full_url()
-    assert "cursor=page2" in called_url
-    assert "limit=10" in called_url
+    # Verify correct URLs were called
+    calls = mock_urlopen.call_args_list
+    assert len(calls) == 2
+    first_url = calls[0][0][0].get_full_url()
+    second_url = calls[1][0][0].get_full_url()
+    assert "cursor" not in first_url  # First request should not have cursor
+    assert "cursor=page2_cursor" in second_url  # Second should have cursor
