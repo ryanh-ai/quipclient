@@ -36,18 +36,19 @@ def test_get_thread_folders_v2(quip_client, mock_urlopen, mock_response):
     """Test getting thread folders with v2 API"""
     # Setup mock response
     mock_urlopen.return_value = mock_response(json_data=THREAD_FOLDERS_V2)
-    mock_urlopen.side_effect = None
     
-    # Call with shorter timeout for testing
+    # Call the API
     result = quip_client.get_thread_folders_v2("THREAD123", timeout=5)
     
-    # Verify response
+    # Verify response structure
     assert len(result["folders"]) == 2
     assert result["folders"][0]["folder_id"] == "FOLDER1"
     assert result["folders"][0]["type"] == "SHARED"
+    
+    # Verify pagination metadata
     assert "response_metadata" in result
-    # Verify response_metadata exists but don't assume next_cursor value
-    assert isinstance(result["response_metadata"], dict)
+    assert "next_cursor" in result["response_metadata"]
+    assert result["response_metadata"]["next_cursor"] == ""  # Should be empty after pagination
 
 def test_get_thread_html_v2(quip_client, mock_urlopen, mock_response):
     """Test getting thread HTML with v2 API"""
