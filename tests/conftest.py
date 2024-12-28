@@ -1,6 +1,7 @@
 import json
 import pytest
-from unittest.mock import Mock, BytesIO
+from unittest.mock import Mock
+from io import BytesIO
 from quipclient.quip import QuipClient
 from urllib.error import HTTPError
 import time
