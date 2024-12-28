@@ -8,6 +8,10 @@ import sys
 import time
 import xml.etree.cElementTree
 import zlib
+from diskcache import Cache
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
+from urllib.parse import urlencode
 
 try:
     ssl.PROTOCOL_TLSv1_1
@@ -595,7 +599,7 @@ class QuipClient(BaseQuipClient):
         row = self.find_row_from_header(spreadsheet, header, value)
         if row:
             ids = self.get_row_ids(row)
-            for head, val in iteritems(updates):
+            for head, val in updates.items():
                 index = self.get_index_of_header(headers, head)
                 if not index or index >= len(ids) or not ids[index]:
                     continue
@@ -618,7 +622,7 @@ class QuipClient(BaseQuipClient):
             headers = self.get_spreadsheet_header_items(spreadsheet)
         indexed_items = {}
         extra_items = []
-        for head, val in iteritems(updates):
+        for head, val in updates.items():
             index = self.get_index_of_header(
                 headers, head, default=None)
             if index is None or index in indexed_items:
