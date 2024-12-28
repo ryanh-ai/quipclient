@@ -5,9 +5,9 @@ def test_get_thread(quip_client, mock_urlopen, mock_response):
     thread_data = {
         "thread": {
             "author_id": "ABC123xyz",
-            "thread_class": "document",
+            "thread_class": "document", 
             "owning_company_id": "XYZ789abc",
-            "id": "DEF456uvw",
+            "id": "test123",
             "created_usec": 1735232430682856,
             "updated_usec": 1735232468086554,
             "title": "Mock Document",
@@ -27,7 +27,7 @@ def test_get_thread(quip_client, mock_urlopen, mock_response):
 def test_get_user(quip_client, mock_urlopen, mock_response):
     user_data = {
         "name": "Mock User",
-        "id": "JKL012mno",
+        "id": "test_user",
         "is_robot": False,
         "affinity": 0.0
     }
@@ -43,7 +43,7 @@ def test_get_authenticated_user(quip_client, mock_urlopen, mock_response):
     user_data = {
         "name": "Mock Auth User",
         "emails": ["user@example.com"],
-        "id": "MNO345pqr",
+        "id": "auth_user",
         "is_robot": False,
         "affinity": 0.0,
         "desktop_folder_id": "PQR678stu",
@@ -68,7 +68,7 @@ def test_get_authenticated_user(quip_client, mock_urlopen, mock_response):
 
 def test_get_folders(quip_client, mock_urlopen, mock_response):
     folders_data = {
-        "KLM789nop": {
+        "folder1": {
             "folder": {
                 "creator_id": "NOP012qrs",
                 "folder_type": "private",
@@ -85,7 +85,7 @@ def test_get_folders(quip_client, mock_urlopen, mock_response):
                 {"folder_id": "TUV678wxy"}
             ]
         },
-        "WXY901zab": {
+        "folder2": {
             "folder": {
                 "creator_id": "NOP012qrs",
                 "folder_type": "shared",
@@ -112,7 +112,7 @@ def test_get_folders(quip_client, mock_urlopen, mock_response):
 
 def test_get_threads(quip_client, mock_urlopen, mock_response):
     threads_data = {
-        "IJK890lmn": {
+        "thread1": {
             "thread": {
                 "author_id": "LMN123opq",
                 "thread_class": "document",
@@ -131,7 +131,7 @@ def test_get_threads(quip_client, mock_urlopen, mock_response):
             "shared_folder_ids": [],
             "access_levels": {"LMN123opq": {"access_level": "OWN"}}
         },
-        "UVW012xyz": {
+        "thread2": {
             "thread": {
                 "author_id": "LMN123opq", 
                 "thread_class": "document",
