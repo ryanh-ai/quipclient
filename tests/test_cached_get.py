@@ -25,7 +25,14 @@ def test_cached_get_batch_size(quip_client, mock_urlopen, mock_response):
     responses = [
         {"ID0": {"data": "batch1"}, "ID1": {"data": "batch1"}},
         {"ID2": {"data": "batch2"}, "ID3": {"data": "batch2"}},
-        # ... etc for all batches
+        {"ID4": {"data": "batch3"}, "ID5": {"data": "batch3"}},
+        {"ID6": {"data": "batch4"}, "ID7": {"data": "batch4"}},
+        {"ID8": {"data": "batch5"}, "ID9": {"data": "batch5"}},
+        {"ID10": {"data": "batch6"}, "ID11": {"data": "batch6"}},
+        {"ID12": {"data": "batch7"}, "ID13": {"data": "batch7"}},
+        {"ID14": {"data": "batch8"}, "ID15": {"data": "batch8"}},
+        {"ID16": {"data": "batch9"}, "ID17": {"data": "batch9"}},
+        {"ID18": {"data": "batch10"}, "ID19": {"data": "batch10"}}
     ]
     mock_urlopen.side_effect = [mock_response(json_data=r) for r in responses]
     
