@@ -94,35 +94,31 @@ def test_get_messages_variations(quip_client, mock_urlopen, mock_response, test_
     if "files" in test_data[0]:
         assert len(result[0]["files"]) == len(test_data[0]["files"])
 
-def test_get_blob(quip_client, mock_urlopen, mock_response):
+@pytest.mark.parametrize("test_name,test_data", BLOB_TEST_CASES)
+def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     mock_resp = Mock()
-    mock_resp.read = lambda: TEST_BLOB_CONTENT
+    mock_resp.read = lambda: test_data["content"]
     mock_urlopen.return_value = mock_resp
     
-    result = quip_client.get_blob("THREAD1", "BLOB123")
-    assert result.read() == TEST_BLOB_CONTENT
+    result = quip_client.get_blob(test_data["response"]["thread_id"], test_data["response"]["hash"])
+    assert result.read() == test_data["content"]
     mock_urlopen.assert_called_once()
 
-def test_get_folders_batch(quip_client, mock_urlopen, mock_response):
-    test_folders = {
-        "FOLDER1": {"folder": {"id": "FOLDER1", "title": "Test 1"}},
-        "FOLDER2": {"folder": {"id": "FOLDER2", "title": "Test 2"}}
-    }
-    mock_urlopen.return_value = mock_response(json_data=test_folders)
+@pytest.mark.parametrize("test_name,test_data", [
+    ("folders_batch", FOLDERS_BATCH),
+    ("threads_batch", THREADS_BATCH)
+])
+def test_get_batch_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
+    mock_urlopen.return_value = mock_response(json_data=test_data)
     
-    result = quip_client.get_folders(["FOLDER1", "FOLDER2"])
-    assert len(result) == 2
-    assert result["FOLDER1"]["folder"]["title"] == "Test 1"
-    assert result["FOLDER2"]["folder"]["title"] == "Test 2"
-
-def test_get_threads_batch(quip_client, mock_urlopen, mock_response):
-    test_threads = {
-        "THREAD1": {"thread": {"id": "THREAD1", "title": "Thread 1"}},
-        "THREAD2": {"thread": {"id": "THREAD2", "title": "Thread 2"}}
-    }
-    mock_urlopen.return_value = mock_response(json_data=test_threads)
-    
-    result = quip_client.get_threads(["THREAD1", "THREAD2"])
-    assert len(result) == 2
-    assert result["THREAD1"]["thread"]["title"] == "Thread 1"
-    assert result["THREAD2"]["thread"]["title"] == "Thread 2"
+    if "folder" in next(iter(test_data.values())):
+        result = quip_client.get_folders(list(test_data.keys()))
+        item_type = "folder"
+    else:
+        result = quip_client.get_threads(list(test_data.keys()))
+        item_type = "thread"
+        
+    assert len(result) == len(test_data)
+    for key, value in test_data.items():
+        assert result[key][item_type]["id"] == value[item_type]["id"]
+        assert result[key][item_type]["title"] == value[item_type]["title"]
