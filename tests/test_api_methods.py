@@ -107,18 +107,32 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     assert result.read() == test_data["content"]
     mock_urlopen.assert_called_once()
 
-@pytest.mark.parametrize("test_name,test_data", BATCH_TEST_CASES)
-def test_batch_operations(quip_client, mock_urlopen, mock_response, test_name, test_data):
+def test_batch_folders(quip_client, mock_urlopen, mock_response):
+    test_data = {
+        "FOLDER1": {"folder": {"id": "FOLDER1", "title": "Test 1", "type": "folder"}},
+        "FOLDER2": {"folder": {"id": "FOLDER2", "title": "Test 2", "type": "folder"}}
+    }
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
-    if test_name == "folders_batch":
-        result = quip_client.get_folders(list(test_data.keys()))
-    else:  # threads_batch
-        result = quip_client.get_threads(list(test_data.keys()))
+    result = quip_client.get_folders(list(test_data.keys()))
     
     assert len(result) == len(test_data)
     for key, value in test_data.items():
-        entity_type = "folder" if "folder" in value else "thread"
-        assert result[key][entity_type]["id"] == value[entity_type]["id"]
-        assert result[key][entity_type]["title"] == value[entity_type]["title"]
-        assert result[key][entity_type]["type"] == value[entity_type]["type"]
+        assert result[key]["folder"]["id"] == value["folder"]["id"]
+        assert result[key]["folder"]["title"] == value["folder"]["title"]
+        assert result[key]["folder"]["type"] == value["folder"]["type"]
+
+def test_batch_threads(quip_client, mock_urlopen, mock_response):
+    test_data = {
+        "THREAD1": {"thread": {"id": "THREAD1", "title": "Thread 1", "type": "document"}},
+        "THREAD2": {"thread": {"id": "THREAD2", "title": "Thread 2", "type": "document"}}
+    }
+    mock_urlopen.return_value = mock_response(json_data=test_data)
+    
+    result = quip_client.get_threads(list(test_data.keys()))
+    
+    assert len(result) == len(test_data)
+    for key, value in test_data.items():
+        assert result[key]["thread"]["id"] == value["thread"]["id"]
+        assert result[key]["thread"]["title"] == value["thread"]["title"]
+        assert result[key]["thread"]["type"] == value["thread"]["type"]

@@ -28,19 +28,4 @@ BLOB_TEST_CASES = [
     ("binary_blob", BINARY_BLOB)
 ]
 
-# Batch test data
-FOLDERS_BATCH = {
-    "FOLDER1": {"folder": {"id": "FOLDER1", "title": "Test 1", "type": "folder"}},
-    "FOLDER2": {"folder": {"id": "FOLDER2", "title": "Test 2", "type": "folder"}}
-}
 
-THREADS_BATCH = {
-    "THREAD1": {"thread": {"id": "THREAD1", "title": "Thread 1", "type": "document"}},
-    "THREAD2": {"thread": {"id": "THREAD2", "title": "Thread 2", "type": "document"}}
-}
-
-# Test cases mapping for batch operations
-BATCH_TEST_CASES = [
-    ("folders_batch", FOLDERS_BATCH),
-    ("threads_batch", THREADS_BATCH)
-]
