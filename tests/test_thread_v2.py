@@ -34,15 +34,21 @@ def test_get_threads_v2(quip_client, mock_urlopen, mock_response):
 
 def test_get_thread_folders_v2(quip_client, mock_urlopen, mock_response):
     """Test getting thread folders with v2 API"""
+    print("\nStarting test_get_thread_folders_v2")
+    print("Setting up mock response...")
     mock_urlopen.return_value = mock_response(json_data=THREAD_FOLDERS_V2)
     
+    print("Calling get_thread_folders_v2...")
     result = quip_client.get_thread_folders_v2("THREAD123")
+    print("Received response from get_thread_folders_v2")
     
+    print("Verifying response...")
     assert len(result["folders"]) == 2
     assert result["folders"][0]["folder_id"] == "FOLDER1"
     assert result["folders"][0]["type"] == "SHARED"
     assert "response_metadata" in result
     assert "next_cursor" in result["response_metadata"]
+    print("Completed test_get_thread_folders_v2")
 
 def test_get_thread_html_v2(quip_client, mock_urlopen, mock_response):
     """Test getting thread HTML with v2 API"""
