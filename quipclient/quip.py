@@ -131,6 +131,14 @@ class QuipClient(object):
 
     def __init__(self, access_token=None, client_id=None, client_secret=None,
                  base_url=None, request_timeout=None, cache_dir=None):
+        # Rate limit tracking
+        self._rate_limit = None  # Requests per minute limit
+        self._rate_limit_remaining = None  # Remaining requests this minute
+        self._rate_limit_reset = None  # UTC timestamp when limit resets
+        self._company_rate_limit = None  # Company requests per minute
+        self._company_rate_limit_remaining = None  # Remaining company requests
+        self._company_rate_limit_reset = None  # UTC timestamp for company reset
+        self._company_retry_after = None  # Seconds until next allowed request
         """Constructs a Quip API client.
 
         If `access_token` is given, all of the API methods in the client
@@ -875,6 +883,15 @@ class QuipClient(object):
     def _fetch_json(self, path, post_data=None, cache=True, cache_ttl=None, **args):
         url = self._url(path, **args)
 
+        # Check if we need to wait for rate limits
+        now = time.time()
+        if self._rate_limit_reset and now < self._rate_limit_reset and self._rate_limit_remaining == 0:
+            sleep_time = self._rate_limit_reset - now
+            time.sleep(sleep_time)
+        elif self._company_retry_after and now < self._company_rate_limit_reset:
+            sleep_time = self._company_rate_limit_reset - now
+            time.sleep(sleep_time)
+
         # Check cache if enabled and this is a GET request
         if cache and not post_data and cache_ttl:
             cache_key = f"{self._user_id or "_"}:{url}"
@@ -896,14 +913,26 @@ class QuipClient(object):
         if self.access_token:
             request.add_header("Authorization", "Bearer " + self.access_token)
         try:
-            response_data = urlopen(request, timeout=self.request_timeout).read().decode()
+            response = urlopen(request, timeout=self.request_timeout)
+            
+            # Update rate limit tracking from response headers
+            self._rate_limit = int(response.headers.get('X-RateLimit-Limit', 0))
+            self._rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining', 0))
+            self._rate_limit_reset = float(response.headers.get('X-RateLimit-Reset', 0))
+            
+            self._company_rate_limit = int(response.headers.get('X-Company-RateLimit-Limit', 0))
+            self._company_rate_limit_remaining = int(response.headers.get('X-Company-RateLimit-Remaining', 0))
+            self._company_rate_limit_reset = float(response.headers.get('X-Company-RateLimit-Reset', 0))
+            self._company_retry_after = int(response.headers.get('X-Company-Retry-After', 0))
+            
+            response_data = response.read().decode()
             result = json.loads(response_data)
             
             # Cache successful GET responses if caching is enabled
             if cache and not post_data:
                 cache_key = f"{self.access_token}:{url}"
                 self._cache.set(cache_key, zlib.compress(response_data.encode()), cache_ttl)
-                
+            
             return result
         except HTTPError as error:
             try:
