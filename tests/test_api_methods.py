@@ -111,7 +111,6 @@ def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test
     result2 = quip_client.get_threads(list(test_data.keys()))
     assert result2 == result1
 
-    # AI, the client isn't threaded right now, unclear why we're using this. please adjust
     # For large batches, verify correct batch size was used
     if len(test_data) > quip_client.MAX_THREADS_PER_REQUEST:
         expected_batches = (len(test_data) + quip_client.MAX_THREADS_PER_REQUEST - 1) \
@@ -121,6 +120,5 @@ def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test
         # For normal cases, verify API was only called once due to caching
         assert mock_urlopen.call_count == 1
     else:
-        # AI! please fix this, if there is no test data, the url should never be called, and its actually getting called 2 times now
-        # For empty data, verify API is still called once
-        assert mock_urlopen.call_count == 1
+        # For empty data, verify no API calls are made
+        assert mock_urlopen.call_count == 0
