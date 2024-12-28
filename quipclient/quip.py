@@ -334,15 +334,26 @@ class QuipClient(object):
                 raise
             raise TimeoutError(f"Request timed out after {timeout} seconds") from e
 
-    def get_thread_html_v2(self, thread_id_or_path):
+    def get_thread_html_v2(self, thread_id_or_path, cache=False, cache_ttl=ONE_HOUR):
         """Returns complete thread HTML content using v2 API.
         
         Args:
             thread_id_or_path: Thread ID or secret path
+            cache: Whether to cache the response (default False)
+            cache_ttl: Cache TTL in seconds (default 1 hour)
             
         Returns:
             Combined results from all pages of HTML content.
         """
+        # Try to get complete result from cache first
+        if cache:
+            url = self._url(f"2/threads/{thread_id_or_path}/html")
+            cache_key = f"{self._user_id or '_'}:{url}"
+            cached_data = self._cache.get(cache_key)
+            if cached_data:
+                return json.loads(zlib.decompress(cached_data).decode())
+        
+        # If not cached or cache disabled, fetch all pages
         result = {"html": "", "response_metadata": {"next_cursor": ""}}
         cursor = None
         
@@ -356,6 +367,16 @@ class QuipClient(object):
             cursor = page.get("response_metadata", {}).get("next_cursor")
             if not cursor:
                 break
+        
+        # Cache the complete result if caching is enabled
+        if cache:
+            url = self._url(f"2/threads/{thread_id_or_path}/html")
+            cache_key = f"{self._user_id or '_'}:{url}"
+            self._cache.set(
+                cache_key,
+                zlib.compress(json.dumps(result).encode()),
+                cache_ttl
+            )
                 
         return result
 
