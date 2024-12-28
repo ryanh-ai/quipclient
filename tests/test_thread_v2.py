@@ -34,26 +34,19 @@ def test_get_threads_v2(quip_client, mock_urlopen, mock_response):
 
 def test_get_thread_folders_v2(quip_client, mock_urlopen, mock_response):
     """Test getting thread folders with v2 API"""
-    print("\nStarting test_get_thread_folders_v2")
-    print("Setting up mock response...")
+    # Setup mock response
     mock_urlopen.return_value = mock_response(json_data=THREAD_FOLDERS_V2)
-    mock_urlopen.side_effect = None  # Ensure no side effects interfering
+    mock_urlopen.side_effect = None
     
-    print("Calling get_thread_folders_v2...")
-    try:
-        result = quip_client.get_thread_folders_v2("THREAD123")
-        print("Received response from get_thread_folders_v2")
-    except Exception as e:
-        print(f"Exception occurred: {type(e).__name__}: {str(e)}")
-        raise
+    # Call with shorter timeout for testing
+    result = quip_client.get_thread_folders_v2("THREAD123", timeout=5)
     
-    print("Verifying response...")
+    # Verify response
     assert len(result["folders"]) == 2
     assert result["folders"][0]["folder_id"] == "FOLDER1"
     assert result["folders"][0]["type"] == "SHARED"
     assert "response_metadata" in result
     assert "next_cursor" in result["response_metadata"]
-    print("Completed test_get_thread_folders_v2")
 
 def test_get_thread_html_v2(quip_client, mock_urlopen, mock_response):
     """Test getting thread HTML with v2 API"""
