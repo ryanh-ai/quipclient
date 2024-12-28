@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from quipclient import QuipClient
 from .test_data.users import BASIC_USER, EMAIL_USER, AUTH_USER
 from .test_data.batch_folders import SIMPLE_FOLDERS, EMPTY_FOLDERS
-from .test_data.batch_threads import SIMPLE_THREADS, EMPTY_THREADS
+from .test_data.batch_threads import SIMPLE_THREADS, EMPTY_THREADS, BATCH_THREAD_TEST_CASES
 from .test_data.folders import PRIVATE_FOLDER, SHARED_FOLDER
 from .test_data.threads import SIMPLE_THREAD, COMPLEX_THREAD
 from .test_data.blobs import BLOB_TEST_CASES
