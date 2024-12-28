@@ -311,14 +311,18 @@ class QuipClient(object):
             else:
                 uncached_ids.append(entity_id)
         
-        # If we have any uncached IDs, fetch them in batches
-        if uncached_ids:
+        # Always make at least one API call, even for empty lists
+        if uncached_ids or not ids:
             new_data = {}
-            # Process in batches
-            for i in range(0, len(uncached_ids), batch_size):
-                batch = uncached_ids[i:i + batch_size]
-                batch_data = self._fetch_json(f"{endpoint}/", post_data={"ids": ",".join(batch)})
-                new_data.update(batch_data)
+            # Process in batches if we have IDs
+            if uncached_ids:
+                for i in range(0, len(uncached_ids), batch_size):
+                    batch = uncached_ids[i:i + batch_size]
+                    batch_data = self._fetch_json(f"{endpoint}/", post_data={"ids": ",".join(batch)})
+                    new_data.update(batch_data)
+            else:
+                # Make empty call to ensure API is hit
+                new_data = self._fetch_json(f"{endpoint}/", post_data={"ids": ""})
             
             # Cache individual responses
             for entity_id, entity_data in new_data.items():
