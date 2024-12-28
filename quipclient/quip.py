@@ -286,7 +286,7 @@ class QuipClient(object):
         """Returns the thread with the given ID using v1 API."""
         return self._fetch_json("threads/" + id, cache=cache, cache_ttl=cache_ttl)
 
-    def get_thread_v2(self, thread_id_or_path, cache=True, cache_ttl=THIRTY_DAYS):
+    def get_thread_v2(self, thread_id_or_path, cache=True, cache_ttl=None):
         """Returns thread information using v2 API.
         
         Args:
@@ -297,7 +297,7 @@ class QuipClient(object):
         return self._fetch_json(f"2/threads/{thread_id_or_path}", 
                               cache=cache, cache_ttl=cache_ttl)
 
-    def get_threads_v2(self, ids, cache=True, cache_ttl=THIRTY_DAYS):
+    def get_threads_v2(self, ids, cache=True, cache_ttl=None):
         """Returns information about multiple threads using v2 API.
         
         Args:
@@ -334,7 +334,7 @@ class QuipClient(object):
                 raise
             raise TimeoutError(f"Request timed out after {timeout} seconds") from e
 
-    def get_thread_html_v2(self, thread_id_or_path, cache=False, cache_ttl=ONE_HOUR):
+    def get_thread_html_v2(self, thread_id_or_path, cache=True, cache_ttl=None):
         """Returns complete thread HTML content using v2 API.
         
         Args:
