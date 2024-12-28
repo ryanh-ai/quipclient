@@ -898,7 +898,11 @@ class QuipClient(object):
             cache_key = f"{self._user_id or "_"}:{url}"
             cached_data, expiry_time = self._cache.get(cache_key, expire_time=True)
             if cached_data:  # Check if we have actual data
-                return json.loads(zlib.decompress(cached_data).decode())
+                data = json.loads(zlib.decompress(cached_data).decode())
+                if isinstance(data, dict) and data.get("error"):
+                    # Reconstruct the error from cache
+                    raise QuipError(data["code"], data["message"], None)
+                return data
 
         # TODO: add support for post data as part of cache_key
         request = Request(url=url)
@@ -947,7 +951,12 @@ class QuipClient(object):
                 # Cache error responses if caching is enabled
                 if cache and not post_data and cache_ttl:
                     cache_key = f"{self._user_id or '_'}:{url}"
-                    self._cache.set(cache_key, zlib.compress(error_data.encode()), cache_ttl)
+                    error_cache = {
+                        "error": True,
+                        "code": error.code,
+                        "message": message
+                    }
+                    self._cache.set(cache_key, zlib.compress(json.dumps(error_cache).encode()), cache_ttl)
             except Exception:
                 raise error
             raise QuipError(error.code, message, error)
