@@ -9,14 +9,17 @@ from .test_data.threads_v2 import (
 
 def test_get_thread_v2(quip_client, mock_urlopen, mock_response):
     """Test getting a single thread with v2 API"""
+    print("\nStarting test_get_thread_v2")
     mock_urlopen.return_value = mock_response(json_data=BASIC_THREAD_V2)
     
     result = quip_client.get_thread_v2("THREAD123")
+    print("Got result from get_thread_v2")
     
     assert result["thread"]["id"] == "THREAD123"
     assert result["thread"]["title"] == "Test Document"
     assert result["thread"]["type"] == "DOCUMENT"
     assert "sharing" in result["thread"]
+    print("Completed test_get_thread_v2")
 
 def test_get_threads_v2(quip_client, mock_urlopen, mock_response):
     """Test getting multiple threads with v2 API"""
