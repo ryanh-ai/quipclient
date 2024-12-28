@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import Mock
 from quipclient import QuipClient
 from .test_data.users import BASIC_USER, EMAIL_USER, AUTH_USER
 from .test_data.folders import PRIVATE_FOLDER, SHARED_FOLDER
