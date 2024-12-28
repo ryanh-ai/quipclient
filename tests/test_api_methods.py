@@ -108,21 +108,22 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     assert result.read() == test_data["content"]
     mock_urlopen.assert_called_once()
 
-@pytest.mark.parametrize("test_name,test_data", [
-    ("folders_batch", FOLDERS_BATCH),
-    ("threads_batch", THREADS_BATCH)
-])
-def test_get_batch_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
-    mock_urlopen.return_value = mock_response(json_data=test_data)
+def test_get_folders_batch(quip_client, mock_urlopen, mock_response):
+    mock_urlopen.return_value = mock_response(json_data=FOLDERS_BATCH)
     
-    if "folder" in next(iter(test_data.values())):
-        result = quip_client.get_folders(list(test_data.keys()))
-        item_type = "folder"
-    else:
-        result = quip_client.get_threads(list(test_data.keys()))
-        item_type = "thread"
-        
-    assert len(result) == len(test_data)
-    for key, value in test_data.items():
-        assert result[key][item_type]["id"] == value[item_type]["id"]
-        assert result[key][item_type]["title"] == value[item_type]["title"]
+    result = quip_client.get_folders(list(FOLDERS_BATCH.keys()))
+    
+    assert len(result) == len(FOLDERS_BATCH)
+    for key, value in FOLDERS_BATCH.items():
+        assert result[key]["folder"]["id"] == value["folder"]["id"]
+        assert result[key]["folder"]["title"] == value["folder"]["title"]
+
+def test_get_threads_batch(quip_client, mock_urlopen, mock_response):
+    mock_urlopen.return_value = mock_response(json_data=THREADS_BATCH)
+    
+    result = quip_client.get_threads(list(THREADS_BATCH.keys()))
+    
+    assert len(result) == len(THREADS_BATCH)
+    for key, value in THREADS_BATCH.items():
+        assert result[key]["thread"]["id"] == value["thread"]["id"]
+        assert result[key]["thread"]["title"] == value["thread"]["title"]
