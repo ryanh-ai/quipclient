@@ -1,3 +1,4 @@
+import os
 import pytest
 
 def test_get_threads_v2_from_shared_folders(quip_client, shared_folder_ids):
@@ -30,3 +31,20 @@ def test_get_threads_v2_from_shared_folders(quip_client, shared_folder_ids):
     assert "title" in thread
     assert "type" in thread
     assert "sharing" in thread
+
+def test_get_thread_html_v2_pagination(quip_client):
+    """Test getting complete HTML content with pagination"""
+    # Get thread ID from environment
+    thread_id = os.getenv("QUIP_GET_HTML_PAGED")
+    if not thread_id:
+        pytest.skip("QUIP_GET_HTML_PAGED environment variable not set")
+    
+    # Get complete HTML content with pagination
+    result = quip_client.get_thread_html_v2(thread_id, cache=False)
+    
+    # Verify response structure
+    assert "html" in result
+    assert len(result["html"]) > 0
+    assert "response_metadata" in result
+    assert "next_cursor" in result["response_metadata"]
+    assert result["response_metadata"]["next_cursor"] == ""  # Should be empty after all pages
