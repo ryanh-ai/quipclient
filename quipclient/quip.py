@@ -827,8 +827,18 @@ class QuipClient(object):
             return urlopen(request, timeout=self.request_timeout)
         except HTTPError as error:
             try:
-                # Extract the developer-friendly error message from the response
-                message = json.loads(error.read().decode())["error_description"]
+                error_data = error.read().decode()
+                error_json = json.loads(error_data)
+                message = error_json["error_description"]
+                
+                # Cache 403 errors if caching is enabled
+                if cache and error.code == 403:
+                    cache_key = f"{self._user_id or '_'}:{url}"
+                    self._cache.set(
+                        cache_key,
+                        zlib.compress(error_data.encode()),
+                        cache_ttl or self.ONE_HOUR
+                    )
             except Exception:
                 raise error
             raise QuipError(error.code, message, error)
