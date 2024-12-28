@@ -1019,10 +1019,15 @@ class QuipClient(object):
         return dict((k, str(v) if isinstance(v, int) else v.encode("utf-8"))
                     for k, v in args.items() if v or isinstance(v, int))
 
-    def _url(self, path, **args):
+    def _url(self, path, cursor=None, **args):
         # Skip adding /1/ prefix if path already starts with /2/
         version_prefix = "" if path.startswith("2/") else "/1/"
         url = self.base_url + version_prefix + path
+        
+        # Handle cursor separately to ensure it's included in URL when present
+        if cursor:
+            args['cursor'] = cursor
+            
         args = self._clean(**args)
         if args:
             url += "?" + urlencode(args)
