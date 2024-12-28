@@ -7,7 +7,7 @@ from .test_data.threads import SIMPLE_THREAD, COMPLEX_THREAD
 from .test_data.contacts import BASIC_CONTACTS, EMPTY_CONTACTS
 from .test_data.teams import BASIC_TEAMS, TEAM_WITH_MEMBERS
 from .test_data.messages import BASIC_MESSAGES, MESSAGES_WITH_ATTACHMENTS
-from .test_data.blobs import BLOB_TEST_CASES
+from .test_data.blobs import BLOB_TEST_CASES, BATCH_FOLDER_TEST_CASES, BATCH_THREAD_TEST_CASES
 from io import BytesIO
 
 @pytest.mark.parametrize("test_name,test_data", [
@@ -104,11 +104,8 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     assert result.read() == test_data["content"]
     mock_urlopen.assert_called_once()
 
-def test_batch_folders(quip_client, mock_urlopen, mock_response):
-    test_data = {
-        "FOLDER1": {"folder": {"id": "FOLDER1", "title": "Test 1", "type": "folder"}},
-        "FOLDER2": {"folder": {"id": "FOLDER2", "title": "Test 2", "type": "folder"}}
-    }
+@pytest.mark.parametrize("test_name,test_data", BATCH_FOLDER_TEST_CASES)
+def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
     result = quip_client.get_folders(list(test_data.keys()))
@@ -119,11 +116,8 @@ def test_batch_folders(quip_client, mock_urlopen, mock_response):
         assert result[key]["folder"]["title"] == value["folder"]["title"]
         assert result[key]["folder"]["type"] == value["folder"]["type"]
 
-def test_batch_threads(quip_client, mock_urlopen, mock_response):
-    test_data = {
-        "THREAD1": {"thread": {"id": "THREAD1", "title": "Thread 1", "type": "document"}},
-        "THREAD2": {"thread": {"id": "THREAD2", "title": "Thread 2", "type": "document"}}
-    }
+@pytest.mark.parametrize("test_name,test_data", BATCH_THREAD_TEST_CASES)
+def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
     result = quip_client.get_threads(list(test_data.keys()))
