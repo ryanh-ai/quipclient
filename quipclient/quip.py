@@ -66,12 +66,8 @@ else:
     iteritems = dict.iteritems
 
 
-try:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-except:
-    # Can't change default encoding usually...
-    pass
+# Python 3 uses UTF-8 by default
+pass
 
 try:
     ssl.PROTOCOL_TLSv1_1
@@ -832,12 +828,13 @@ class QuipClient(object):
                 message = error_json["error_description"]
                 
                 # Cache 403 errors if caching is enabled
-                if cache and error.code == 403:
-                    cache_key = f"{self._user_id or '_'}:{url}"
+                request_url = request.get_full_url()
+                if self._cache and error.code == 403:
+                    cache_key = f"{self._user_id or '_'}:{request_url}"
                     self._cache.set(
                         cache_key,
                         zlib.compress(error_data.encode()),
-                        cache_ttl or self.ONE_HOUR
+                        self.ONE_HOUR
                     )
             except Exception:
                 raise error
