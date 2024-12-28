@@ -2,8 +2,8 @@ import pytest
 from unittest.mock import Mock
 from quipclient import QuipClient
 from .test_data.users import BASIC_USER, EMAIL_USER, AUTH_USER
-from .test_data.batch_folders import BATCH_FOLDER_TEST_CASES
-from .test_data.batch_threads import BATCH_THREAD_TEST_CASES
+from .test_data.batch_folders import SIMPLE_FOLDERS, EMPTY_FOLDERS
+from .test_data.batch_threads import SIMPLE_THREADS, EMPTY_THREADS
 from .test_data.folders import PRIVATE_FOLDER, SHARED_FOLDER
 from .test_data.threads import SIMPLE_THREAD, COMPLEX_THREAD
 from .test_data.contacts import BASIC_CONTACTS, EMPTY_CONTACTS
@@ -106,8 +106,10 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     assert result.read() == test_data["content"]
     mock_urlopen.assert_called_once()
 
-#AI instead of importing the list of tuples "BATCH_FOLDER_TEST_CASES" import each case one by one similar to how we did with others in this file
-@pytest.mark.parametrize("test_name,test_data", BATCH_FOLDER_TEST_CASES)
+@pytest.mark.parametrize("test_name,test_data", [
+    ("simple_folders", SIMPLE_FOLDERS),
+    ("empty_folders", EMPTY_FOLDERS)
+])
 def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
@@ -119,9 +121,10 @@ def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test
         assert result[key]["folder"]["title"] == value["folder"]["title"]
         assert result[key]["folder"]["type"] == value["folder"]["type"]
 
-#AI instead of importing the list of tuples "BATCH_FOLDER_TEST_CASES" import each case one by one similar to how we did with others in this file
-#AI!
-@pytest.mark.parametrize("test_name,test_data", BATCH_THREAD_TEST_CASES)
+@pytest.mark.parametrize("test_name,test_data", [
+    ("simple_threads", SIMPLE_THREADS),
+    ("empty_threads", EMPTY_THREADS)
+])
 def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
