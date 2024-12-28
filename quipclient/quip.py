@@ -930,15 +930,24 @@ class QuipClient(object):
             result = json.loads(response_data)
             
             # Cache successful GET responses if caching is enabled
-            if cache and not post_data:
-                cache_key = f"{self.access_token}:{url}"
+            if cache and not post_data and cache_ttl:
+                cache_key = f"{self._user_id or '_'}:{url}"
                 self._cache.set(cache_key, zlib.compress(response_data.encode()), cache_ttl)
             
             return result
         except HTTPError as error:
             try:
                 # Extract the developer-friendly error message from the response
-                message = json.loads(error.read().decode())["error_description"]
+                error_data = error.read().decode()
+                if error_data:
+                    error_json = json.loads(error_data)
+                    message = error_json["error_description"]
+                else:
+                    message = error.reason
+                # Cache error responses if caching is enabled
+                if cache and not post_data and cache_ttl:
+                    cache_key = f"{self._user_id or '_'}:{url}"
+                    self._cache.set(cache_key, zlib.compress(error_data.encode()), cache_ttl)
             except Exception:
                 raise error
             raise QuipError(error.code, message, error)
