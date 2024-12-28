@@ -317,7 +317,7 @@ class QuipClient(object):
             # Process uncached IDs in batches
             for i in range(0, len(uncached_ids), batch_size):
                 batch = uncached_ids[i:i + batch_size]
-                batch_data = self._fetch_json(f"{endpoint}/", post_data={"ids": ",".join(batch)})
+                batch_data = self._fetch_json(f"{endpoint}/", ids=",".join(batch))
                 new_data.update(batch_data)
             
             # Cache individual responses
