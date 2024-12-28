@@ -111,11 +111,14 @@ def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test
     result2 = quip_client.get_threads(list(test_data.keys()))
     assert result2 == result1
     
-    # Verify API was only called once due to caching
-    assert mock_urlopen.call_count == 1
-    
     # For large batches, verify correct batch size was used
     if len(test_data) > quip_client.MAX_THREADS_PER_REQUEST:
         expected_batches = (len(test_data) + quip_client.MAX_THREADS_PER_REQUEST - 1) \
             // quip_client.MAX_THREADS_PER_REQUEST
         assert mock_urlopen.call_count == expected_batches
+    elif len(test_data) > 0:
+        # For normal cases, verify API was only called once due to caching
+        assert mock_urlopen.call_count == 1
+    else:
+        # For empty data, verify API is still called once
+        assert mock_urlopen.call_count == 1
