@@ -108,22 +108,17 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     assert result.read() == test_data["content"]
     mock_urlopen.assert_called_once()
 
-def test_get_folders_batch(quip_client, mock_urlopen, mock_response):
-    mock_urlopen.return_value = mock_response(json_data=FOLDERS_BATCH)
+@pytest.mark.parametrize("test_name,test_data", BATCH_TEST_CASES)
+def test_batch_operations(quip_client, mock_urlopen, mock_response, test_name, test_data):
+    mock_urlopen.return_value = mock_response(json_data=test_data)
     
-    result = quip_client.get_folders(list(FOLDERS_BATCH.keys()))
+    if test_name == "folders_batch":
+        result = quip_client.get_folders(list(test_data.keys()))
+    else:  # threads_batch
+        result = quip_client.get_threads(list(test_data.keys()))
     
-    assert len(result) == len(FOLDERS_BATCH)
-    for key, value in FOLDERS_BATCH.items():
-        assert result[key]["folder"]["id"] == value["folder"]["id"]
-        assert result[key]["folder"]["title"] == value["folder"]["title"]
-
-def test_get_threads_batch(quip_client, mock_urlopen, mock_response):
-    mock_urlopen.return_value = mock_response(json_data=THREADS_BATCH)
-    
-    result = quip_client.get_threads(list(THREADS_BATCH.keys()))
-    
-    assert len(result) == len(THREADS_BATCH)
-    for key, value in THREADS_BATCH.items():
-        assert result[key]["thread"]["id"] == value["thread"]["id"]
-        assert result[key]["thread"]["title"] == value["thread"]["title"]
+    assert len(result) == len(test_data)
+    for key, value in test_data.items():
+        assert result[key][value["folder" if "folder" in value else "thread"]["type"]] == value[value["folder" if "folder" in value else "thread"]["type"]]
+        assert result[key][value["folder" if "folder" in value else "thread"]["type"]]["id"] == value[value["folder" if "folder" in value else "thread"]["type"]]["id"]
+        assert result[key][value["folder" if "folder" in value else "thread"]["type"]]["title"] == value[value["folder" if "folder" in value else "thread"]["type"]]["title"]
