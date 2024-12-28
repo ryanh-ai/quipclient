@@ -13,7 +13,7 @@ BLOB_TEST_CASES = [
         "blob_id": "abc123",
         "content": b"This is a sample text file content.\nIt has multiple lines.\n",
         "content_type": "text/plain",
-        "content_length": 48
+        "content_length": 59
     }),
     ("image_blob", {
         "thread_id": "THREAD2", 
@@ -27,7 +27,7 @@ BLOB_TEST_CASES = [
         "blob_id": "ghi789", 
         "content": b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n" + b'\x00' * 512,  # Basic PDF header
         "content_type": "application/pdf",
-        "content_length": 518
+        "content_length": 527
     })
 ]
 
