@@ -799,7 +799,7 @@ class QuipClient(BaseQuipClient):
         if self.access_token:
             request.add_header("Authorization", "Bearer " + self.access_token)
         try:
-            return urlopen(request, timeout=self.request_timeout)
+            return self._fetch_blob(request)
         except HTTPError as error:
             try:
                 error_data = error.read().decode()
@@ -845,6 +845,10 @@ class QuipClient(BaseQuipClient):
             except Exception:
                 raise error
             raise QuipError(error.response.status_code, message, error)
+
+    def _fetch_blob(self, request):
+        """Internal method to fetch blob data using the configured urlopen"""
+        return urlopen(request, timeout=self.request_timeout)
 
     def new_websocket(self, **kwargs):
         """Gets a websocket URL to connect to.
