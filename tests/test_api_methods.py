@@ -25,13 +25,19 @@ def test_get_user(quip_client, mock_urlopen, mock_response):
     assert result["id"] == "test_user"
 
 def test_get_authenticated_user(quip_client, mock_urlopen, mock_response):
+    # Clear any cached errors first
+    quip_client._cache.clear()
+    
     user_data = {
         "id": "auth_user",
         "name": "Auth User",
         "emails": ["test@example.com"],
         "desktop_folder_id": "folder123"
     }
-    mock_urlopen.return_value = mock_response(json_data=user_data)
+    mock_urlopen.return_value = mock_response(
+        json_data=user_data,
+        headers={'X-RateLimit-Limit': '50'}
+    )
     
     result = quip_client.get_authenticated_user()
     assert result["id"] == "auth_user"
