@@ -1,36 +1,43 @@
-"""User-related test data"""
+"""Test data for user-related API responses"""
 
-# Basic user structure
-USER_DATA = {
-    "name": "Mock User",
-    "id": "test_user",
+# Basic user info (minimal response)
+BASIC_USER = {
+    "name": "John Smith",
+    "id": "SMITH123",
     "is_robot": False,
     "affinity": 0.0
 }
 
-# User with just emails added
-USER_WITH_EMAILS = {
-    "name": "Mock Email User",
-    "emails": ["user2@example.com"],
-    "id": "email_user",
+# User with email info
+EMAIL_USER = {
+    "name": "Jane Doe",
+    "emails": ["jane.doe@test.com"],
+    "id": "DOE456",
     "is_robot": False,
     "affinity": 0.0
 }
 
-# Full authenticated user structure
-AUTHENTICATED_USER_DATA = {
-    "name": "Mock Auth User",
-    "emails": ["user@example.com"],
-    "id": "auth_user",
+# Full authenticated user data
+AUTH_USER = {
+    "name": "Admin User",
+    "emails": ["admin@test.com"],
+    "id": "ADMIN789",
     "is_robot": False,
     "affinity": 0.0,
-    "desktop_folder_id": "PQR678stu",
-    "archive_folder_id": "STU901vwx",
-    "starred_folder_id": "VWX234yza",
-    "private_folder_id": "YZA567bcd",
-    "trash_folder_id": "BCD890efg",
-    "shared_folder_ids": ["EFG123hij", "HIJ456klm"],
-    "group_folder_ids": [],
-    "subdomain": "",
-    "url": "https://example.com"
+    "desktop_folder_id": "DESK123",
+    "archive_folder_id": "ARCH456", 
+    "starred_folder_id": "STAR789",
+    "private_folder_id": "PRIV012",
+    "trash_folder_id": "TRASH345",
+    "shared_folder_ids": ["SHARED1", "SHARED2"],
+    "group_folder_ids": ["GROUP1"],
+    "subdomain": "test",
+    "url": "https://test.quip.com"
 }
+
+# Test cases mapping
+USER_TEST_CASES = [
+    ("basic_user", BASIC_USER),
+    ("email_user", EMAIL_USER), 
+    ("auth_user", AUTH_USER)
+]
