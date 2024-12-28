@@ -339,7 +339,7 @@ class QuipClient(object):
         
         Uses caching to optimize repeated requests for the same threads.
         """
-        return self._cached_get("threads", ids, cache_ttl, batch_size=self.MAX_THREADS_PER_REQUEST)
+        return self._cached_get("2/threads", ids, cache_ttl, batch_size=self.MAX_THREADS_PER_REQUEST)
 
     def get_recent_threads(self, max_updated_usec=None, count=None, **kwargs):
         """Returns the recently updated threads for a given user."""
@@ -965,7 +965,7 @@ class QuipClient(object):
         return dict((k, str(v) if isinstance(v, int) else v.encode("utf-8"))
                     for k, v in args.items() if v or isinstance(v, int))
 
-    #TODO: add support for detecting when path starts with `/2/` and skipping the `/1/`
+    #AI!, add support for detecting when path starts with `/2/` and skipping the `/1/`
     def _url(self, path, **args):
         url = self.base_url + "/1/" + path
         args = self._clean(**args)
