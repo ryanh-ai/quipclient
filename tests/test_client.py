@@ -1,5 +1,5 @@
 import pytest
-from quipclient.quip import QuipClient
+from quipclient import QuipClient
 
 def test_client_initialization(quip_client):
     assert quip_client.access_token == "test_token"

@@ -1,5 +1,5 @@
 import pytest
-from quipclient.quip import QuipClient
+from quipclient import QuipClient
 
 def test_get_thread(quip_client, mock_urlopen, mock_response):
     thread_data = {
