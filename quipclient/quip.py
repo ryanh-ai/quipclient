@@ -283,8 +283,52 @@ class QuipClient(object):
         return self._fetch_json("messages/new", post_data=args, cache=False)
 
     def get_thread(self, id, cache=True, cache_ttl=THIRTY_DAYS):
-        """Returns the thread with the given ID."""
+        """Returns the thread with the given ID using v1 API."""
         return self._fetch_json("threads/" + id, cache=cache, cache_ttl=cache_ttl)
+
+    def get_thread_v2(self, thread_id_or_path, cache=True, cache_ttl=THIRTY_DAYS):
+        """Returns thread information using v2 API.
+        
+        Args:
+            thread_id_or_path: Thread ID or secret path from thread URL
+            cache: Whether to cache the response
+            cache_ttl: Cache TTL in seconds
+        """
+        return self._fetch_json(f"2/threads/{thread_id_or_path}", 
+                              cache=cache, cache_ttl=cache_ttl)
+
+    def get_threads_v2(self, ids, cache=True, cache_ttl=THIRTY_DAYS):
+        """Returns information about multiple threads using v2 API.
+        
+        Args:
+            ids: List of thread IDs or secret paths
+            cache: Whether to cache the response
+            cache_ttl: Cache TTL in seconds
+        """
+        return self._cached_get("2/threads", ids, None if not cache else cache_ttl,
+                              batch_size=self.MAX_THREADS_PER_REQUEST, cache=cache)
+
+    def get_thread_folders_v2(self, thread_id_or_path, cursor=None, limit=None):
+        """Returns list of folders containing the thread using v2 API.
+        
+        Args:
+            thread_id_or_path: Thread ID or secret path
+            cursor: Pagination cursor from previous response
+            limit: Maximum number of items to return
+        """
+        return self._fetch_json(f"2/threads/{thread_id_or_path}/folders",
+                              cursor=cursor, limit=limit, cache=False)
+
+    def get_thread_html_v2(self, thread_id_or_path, cursor=None, limit=None):
+        """Returns thread HTML content using v2 API.
+        
+        Args:
+            thread_id_or_path: Thread ID or secret path
+            cursor: Pagination cursor from previous response
+            limit: Maximum number of items to return
+        """
+        return self._fetch_json(f"2/threads/{thread_id_or_path}/html",
+                              cursor=cursor, limit=limit, cache=False)
 
     def _cached_get(self, endpoint, ids, cache_ttl=THIRTY_DAYS, batch_size=100, cache=True):
         """Helper method to handle cached bulk entity fetching.
