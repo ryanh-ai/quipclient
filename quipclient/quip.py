@@ -186,20 +186,20 @@ class QuipClient(object):
             grant_type=grant_type, refresh_token=refresh_token,
             client_id=self.client_id, client_secret=self.client_secret)
 
-    def get_authenticated_user(self, cache_ttl=ONE_HOUR):
+    def get_authenticated_user(self, cache=True, cache_ttl=ONE_HOUR):
         """Returns the user corresponding to our access token."""
-        return self._fetch_json("users/current", cache=True, cache_ttl=cache_ttl)
+        return self._fetch_json("users/current", cache=cache, cache_ttl=cache_ttl)
 
-    def get_user(self, id, cache_ttl=ONE_HOUR):
+    def get_user(self, id, cache=True, cache_ttl=ONE_HOUR):
         """Returns the user with the given ID."""
-        return self._fetch_json("users/" + id, cache=True, cache_ttl=cache_ttl)
+        return self._fetch_json("users/" + id, cache=cache, cache_ttl=cache_ttl)
 
-    def get_users(self, ids, cache_ttl=THIRTY_DAYS):
+    def get_users(self, ids, cache=True, cache_ttl=THIRTY_DAYS):
         """Returns a dictionary of users for the given IDs.
         
         Uses caching to optimize repeated requests for the same users.
         """
-        return self._cached_get("users", ids, cache_ttl, batch_size=self.MAX_USERS_PER_REQUEST)
+        return self._cached_get("users", ids, None if not cache else cache_ttl, batch_size=self.MAX_USERS_PER_REQUEST)
 
     def update_user(self, user_id, picture_url=None):
         return self._fetch_json("users/update", post_data={
@@ -211,16 +211,16 @@ class QuipClient(object):
         """Returns a list of the users in the authenticated user's contacts."""
         return self._fetch_json("users/contacts")
 
-    def get_folder(self, id, cache_ttl=THIRTY_DAYS):
+    def get_folder(self, id, cache=True, cache_ttl=THIRTY_DAYS):
         """Returns the folder with the given ID."""
-        return self._fetch_json("folders/" + id, cache=True, cache_ttl=cache_ttl)
+        return self._fetch_json("folders/" + id, cache=cache, cache_ttl=cache_ttl)
 
-    def get_folders(self, ids, cache_ttl=THIRTY_DAYS):
+    def get_folders(self, ids, cache=True, cache_ttl=THIRTY_DAYS):
         """Returns a dictionary of folders for the given IDs.
         
         Uses caching to optimize repeated requests for the same folders.
         """
-        return self._cached_get("folders", ids, cache_ttl, batch_size=self.MAX_FOLDERS_PER_REQUEST)
+        return self._cached_get("folders", ids, None if not cache else cache_ttl, batch_size=self.MAX_FOLDERS_PER_REQUEST)
 
     def new_folder(self, title, parent_id=None, color=None, member_ids=[]):
         return self._fetch_json("folders/new", post_data={
@@ -280,9 +280,9 @@ class QuipClient(object):
         args.update(kwargs)
         return self._fetch_json("messages/new", post_data=args, cache=False)
 
-    def get_thread(self, id):
+    def get_thread(self, id, cache=True, cache_ttl=THIRTY_DAYS):
         """Returns the thread with the given ID."""
-        return self._fetch_json("threads/" + id)
+        return self._fetch_json("threads/" + id, cache=cache, cache_ttl=cache_ttl)
 
     def _cached_get(self, endpoint, ids, cache_ttl=THIRTY_DAYS, batch_size=10):
         """Helper method to handle cached bulk entity fetching.
@@ -334,12 +334,12 @@ class QuipClient(object):
             
         return result
 
-    def get_threads(self, ids, cache_ttl=THIRTY_DAYS):
+    def get_threads(self, ids, cache=True, cache_ttl=THIRTY_DAYS):
         """Returns a dictionary of threads for the given IDs.
         
         Uses caching to optimize repeated requests for the same threads.
         """
-        return self._cached_get("2/threads", ids, cache_ttl, batch_size=self.MAX_THREADS_PER_REQUEST)
+        return self._cached_get("2/threads", ids, None if not cache else cache_ttl, batch_size=self.MAX_THREADS_PER_REQUEST)
 
     def get_recent_threads(self, max_updated_usec=None, count=None, **kwargs):
         """Returns the recently updated threads for a given user."""
