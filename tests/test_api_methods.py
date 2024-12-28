@@ -116,6 +116,6 @@ def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test
     
     # For large batches, verify correct batch size was used
     if len(test_data) > quip_client.MAX_THREADS_PER_REQUEST:
-        expected_batches = (len(test_data) + quip_client.MAX_THREADS_PER_REQUEST - 1) 
-        // quip_client.MAX_THREADS_PER_REQUEST
+        expected_batches = (len(test_data) + quip_client.MAX_THREADS_PER_REQUEST - 1) \
+            // quip_client.MAX_THREADS_PER_REQUEST
         assert mock_urlopen.call_count == expected_batches
