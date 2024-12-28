@@ -1,56 +1,47 @@
-"""Folder-related test data"""
+"""Test data for folder-related API responses"""
 
-FOLDERS_DATA = {
-    # Private folder with mixed children
-    "folder1": {
-        "folder": {
-            "creator_id": "NOP012qrs",
-            "folder_type": "private",
-            "inherit_mode": "reset",
-            "id": "KLM789nop",
-            "created_usec": 1510251981120743,
-            "updated_usec": 1732837192184612,
-            "link": "https://example.com/KLM789nop",
-            "title": "Mock Folder 1"
-        },
-        "member_ids": ["NOP012qrs"],
-        "children": [
-            {"thread_id": "QRS345tuv"},
-            {"folder_id": "TUV678wxy"}
-        ]
+# Private folder
+PRIVATE_FOLDER = {
+    "folder": {
+        "creator_id": "USER123",
+        "folder_type": "private",
+        "inherit_mode": "reset",
+        "id": "PRIV_FOLD",
+        "created_usec": 1609459200000000,
+        "updated_usec": 1609545600000000,
+        "link": "https://test.quip.com/folders/private",
+        "title": "Personal Files"
     },
-    # Shared folder with inherit mode
-    "folder2": {
-        "folder": {
-            "creator_id": "NOP012qrs",
-            "folder_type": "shared",
-            "inherit_mode": "inherit",
-            "id": "WXY901zab",
-            "created_usec": 1510251981120743,
-            "updated_usec": 1732837192184612,
-            "link": "https://example.com/WXY901zab",
-            "title": "Mock Folder 2"
-        },
-        "member_ids": ["NOP012qrs"],
-        "children": [
-            {"thread_id": "CDE234fgh"},
-            {"folder_id": "FGH567ijk"}
-        ]
-    },
-    # Empty folder with color
-    "folder3": {
-        "folder": {
-            "creator_id": "NOP012qrs",
-            "folder_type": "shared",
-            "inherit_mode": "reset",
-            "color": "manila",
-            "id": "ZZZ999zzz",
-            "created_usec": 1510251981120743,
-            "updated_usec": 1732837192184612,
-            "link": "https://example.com/ZZZ999zzz",
-            "title": "Mock Folder 3"
-        },
-        "member_ids": ["NOP012qrs"],
-        "children": []
-    }
+    "member_ids": ["USER123"],
+    "children": [
+        {"thread_id": "THREAD1"},
+        {"folder_id": "SUBFOLD1"}
+    ]
 }
+
+# Shared folder
+SHARED_FOLDER = {
+    "folder": {
+        "creator_id": "USER123",
+        "folder_type": "shared",
+        "inherit_mode": "inherit",
+        "color": "blue",
+        "id": "SHARE_FOLD",
+        "created_usec": 1609459200000000,
+        "updated_usec": 1609545600000000,
+        "link": "https://test.quip.com/folders/shared",
+        "title": "Team Projects"
+    },
+    "member_ids": ["USER123", "USER456", "USER789"],
+    "children": [
+        {"thread_id": "THREAD2"},
+        {"thread_id": "THREAD3"},
+        {"folder_id": "SUBFOLD2"}
+    ]
+}
+
+# Test cases mapping
+FOLDER_TEST_CASES = [
+    ("private_folder", PRIVATE_FOLDER),
+    ("shared_folder", SHARED_FOLDER)
+]

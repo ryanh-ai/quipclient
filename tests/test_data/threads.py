@@ -1,87 +1,56 @@
-"""Thread-related test data"""
+"""Test data for thread-related API responses"""
 
-# Basic thread structure
-THREAD_DATA = {
+# Simple document thread
+SIMPLE_THREAD = {
     "thread": {
-        "author_id": "ABC123xyz",
+        "author_id": "USER123",
         "thread_class": "document",
-        "owning_company_id": "XYZ789abc",
-        "id": "test123",
-        "created_usec": 1735232430682856,
-        "updated_usec": 1735232468086554,
-        "title": "Mock Document",
-        "link": "https://example.com/DEF456uvw",
-        "document_id": "GHI789rst",
+        "owning_company_id": "COMPANY1",
+        "id": "THREAD123",
+        "created_usec": 1609459200000000,
+        "updated_usec": 1609545600000000,
+        "title": "Project Notes",
+        "link": "https://test.quip.com/docs/notes",
+        "document_id": "DOC123",
         "type": "document",
-        "is_template": False,
-        "is_deleted": False
+        "is_template": False
+    },
+    "html": "<h1>Project Notes</h1><p>Initial planning</p>",
+    "user_ids": ["USER123"],
+    "shared_folder_ids": ["FOLDER1"],
+    "access_levels": {
+        "USER123": {"access_level": "OWN"}
     }
 }
 
-THREADS_DATA = {
-    # Thread with basic HTML content
-    "thread1": {
-        "thread": {
-            "author_id": "LMN123opq",
-            "thread_class": "document",
-            "owning_company_id": "OPQ456rst",
-            "id": "IJK890lmn",
-            "created_usec": 1735232430682856,
-            "updated_usec": 1735232468086554,
-            "title": "Mock Thread 1",
-            "link": "https://example.com/IJK890lmn",
-            "document_id": "RST789uvw",
-            "type": "document",
-            "is_template": False
-        },
-        "html": "<h1>Mock Content 1</h1>",
-        "user_ids": ["LMN123opq"],
-        "shared_folder_ids": [],
-        "access_levels": {"LMN123opq": {"access_level": "OWN"}}
+# Complex thread with multiple users and content
+COMPLEX_THREAD = {
+    "thread": {
+        "author_id": "USER456",
+        "thread_class": "document",
+        "owning_company_id": "COMPANY1",
+        "id": "THREAD456",
+        "created_usec": 1609459200000000,
+        "updated_usec": 1609545600000000,
+        "title": "Team Roadmap",
+        "link": "https://test.quip.com/docs/roadmap",
+        "document_id": "DOC456",
+        "type": "document",
+        "is_template": False
     },
-    # Thread with complex HTML including tables
-    "thread2": {
-        "thread": {
-            "author_id": "LMN123opq",
-            "thread_class": "document",
-            "owning_company_id": "OPQ456rst",
-            "id": "UVW012xyz",
-            "created_usec": 1735232430682856,
-            "updated_usec": 1735232468086554,
-            "title": "Mock Thread 2",
-            "link": "https://example.com/UVW012xyz",
-            "document_id": "XYZ345abc",
-            "type": "document",
-            "is_template": False
-        },
-        "html": "<h1>Complex Document</h1><table><tr><td>Cell 1</td><td>Cell 2</td></tr></table>",
-        "user_ids": ["LMN123opq", "ABC123xyz"],
-        "shared_folder_ids": ["FOLDER1", "FOLDER2"],
-        "expanded_user_ids": ["LMN123opq", "ABC123xyz"],
-        "invited_user_emails": ["user1@example.com", "user2@example.com"],
-        "access_levels": {
-            "LMN123opq": {"access_level": "OWN"},
-            "ABC123xyz": {"access_level": "EDIT"}
-        }
-    },
-    # Thread that's a template
-    "thread3": {
-        "thread": {
-            "author_id": "LMN123opq",
-            "thread_class": "document",
-            "owning_company_id": "OPQ456rst",
-            "id": "TEMPLATE123",
-            "created_usec": 1735232430682856,
-            "updated_usec": 1735232468086554,
-            "title": "Template Document",
-            "link": "https://example.com/TEMPLATE123",
-            "document_id": "TEMPL345abc",
-            "type": "document",
-            "is_template": True
-        },
-        "html": "<h1>Template Content</h1>",
-        "user_ids": ["LMN123opq"],
-        "shared_folder_ids": [],
-        "access_levels": {"LMN123opq": {"access_level": "OWN"}}
+    "html": "<h1>Q1 Roadmap</h1><table><tr><td>Feature</td><td>Status</td></tr></table>",
+    "user_ids": ["USER456", "USER789"],
+    "shared_folder_ids": ["FOLDER1", "FOLDER2"],
+    "expanded_user_ids": ["USER456", "USER789"],
+    "invited_user_emails": ["new@test.com"],
+    "access_levels": {
+        "USER456": {"access_level": "OWN"},
+        "USER789": {"access_level": "EDIT"}
     }
 }
+
+# Test cases mapping
+THREAD_TEST_CASES = [
+    ("simple_thread", SIMPLE_THREAD),
+    ("complex_thread", COMPLEX_THREAD)
+]
