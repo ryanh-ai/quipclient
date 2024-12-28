@@ -317,8 +317,16 @@ class QuipClient(object):
         Returns:
             Combined results from all pages of folder data.
         """
-        return self._fetch_json(f"2/threads/{thread_id_or_path}/folders",
-                              paginate=True, cache=False)
+        print("Inside get_thread_folders_v2 method")
+        try:
+            result = self._fetch_json(f"2/threads/{thread_id_or_path}/folders",
+                                    paginate=True, cache=False, 
+                                    timeout=10)  # Add 10 second timeout
+            print("Successfully fetched thread folders")
+            return result
+        except Exception as e:
+            print(f"Error in get_thread_folders_v2: {type(e).__name__}: {str(e)}")
+            raise
 
     def get_thread_html_v2(self, thread_id_or_path):
         """Returns complete thread HTML content using v2 API.

@@ -37,10 +37,15 @@ def test_get_thread_folders_v2(quip_client, mock_urlopen, mock_response):
     print("\nStarting test_get_thread_folders_v2")
     print("Setting up mock response...")
     mock_urlopen.return_value = mock_response(json_data=THREAD_FOLDERS_V2)
+    mock_urlopen.side_effect = None  # Ensure no side effects interfering
     
     print("Calling get_thread_folders_v2...")
-    result = quip_client.get_thread_folders_v2("THREAD123")
-    print("Received response from get_thread_folders_v2")
+    try:
+        result = quip_client.get_thread_folders_v2("THREAD123")
+        print("Received response from get_thread_folders_v2")
+    except Exception as e:
+        print(f"Exception occurred: {type(e).__name__}: {str(e)}")
+        raise
     
     print("Verifying response...")
     assert len(result["folders"]) == 2
