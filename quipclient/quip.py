@@ -937,7 +937,21 @@ class QuipClient(object):
         """
         return self._fetch_json("websockets/new", cache=False, **kwargs)
 
-    def _fetch_json(self, path, post_data=None, cache=True, cache_ttl=None, **args):
+    def _fetch_json(self, path, post_data=None, cache=True, cache_ttl=None, paginate=False, **args):
+        """Fetches JSON from the API, handling pagination if requested.
+        
+        Args:
+            path: API endpoint path
+            post_data: Optional POST data
+            cache: Whether to use caching
+            cache_ttl: Cache TTL in seconds
+            paginate: Whether to automatically handle pagination
+            **args: Additional URL parameters
+            
+        Returns:
+            Combined results from all pages if paginate=True,
+            otherwise returns single page response.
+        """
         url = self._url(path, **args)
 
         # Check if we need to wait for rate limits
@@ -994,6 +1008,26 @@ class QuipClient(object):
                 cache_key = f"{self._user_id or '_'}:{url}"
                 self._cache.set(cache_key, zlib.compress(response_data.encode()), cache_ttl)
             
+            # Handle pagination if requested
+            if paginate and not post_data:
+                if "response_metadata" in result and "next_cursor" in result["response_metadata"]:
+                    cursor = result["response_metadata"]["next_cursor"]
+                    while cursor:
+                        next_page = self._fetch_json(path, cache=cache, cache_ttl=cache_ttl, 
+                                                   cursor=cursor, **args)
+                        
+                        # Merge the results
+                        if "folders" in result and "folders" in next_page:
+                            result["folders"].extend(next_page["folders"])
+                        elif "html" in result and "html" in next_page:
+                            result["html"] += next_page["html"]
+                            
+                        cursor = next_page.get("response_metadata", {}).get("next_cursor")
+                    
+                    # Clean up pagination metadata since we've combined all pages
+                    if "response_metadata" in result:
+                        result["response_metadata"]["next_cursor"] = ""
+                        
             return result
         except HTTPError as error:
             try:
