@@ -282,7 +282,7 @@ class QuipClient(object):
 
     def get_thread(self, id, cache=True, cache_ttl=THIRTY_DAYS):
         """Returns the thread with the given ID."""
-        return self._fetch_json("threads/" + id, cache=cache, cache_ttl=cache_ttl)
+        return self._fetch_json("2/threads/" + id, cache=cache, cache_ttl=cache_ttl)
 
     def _cached_get(self, endpoint, ids, cache_ttl=THIRTY_DAYS, batch_size=10):
         """Helper method to handle cached bulk entity fetching.
