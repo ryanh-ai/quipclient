@@ -1011,9 +1011,8 @@ class QuipClient(object):
             if paginate and not post_data:
                 if "response_metadata" in result and "next_cursor" in result["response_metadata"]:
                     cursor = result["response_metadata"]["next_cursor"]
-                    while cursor:
-                        next_page = self._fetch_json(path, cache=cache, cache_ttl=cache_ttl, 
-                                                   cursor=cursor, **args)
+                    while cursor and cursor.strip():  # Only continue if cursor is non-empty
+                        next_page = self._fetch_json(path, cache=False, cursor=cursor, **args)
                         
                         # Merge the results
                         if "folders" in result and "folders" in next_page:
@@ -1021,7 +1020,7 @@ class QuipClient(object):
                         elif "html" in result and "html" in next_page:
                             result["html"] += next_page["html"]
                             
-                        cursor = next_page.get("response_metadata", {}).get("next_cursor")
+                        cursor = next_page.get("response_metadata", {}).get("next_cursor", "")
                     
                     # Clean up pagination metadata since we've combined all pages
                     if "response_metadata" in result:
