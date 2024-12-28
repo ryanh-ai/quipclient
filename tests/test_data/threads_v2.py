@@ -33,7 +33,7 @@ THREAD_FOLDERS_V2 = {
         }
     ],
     "response_metadata": {
-        "next_cursor": "next_page_token"
+        "next_cursor": ""  # Empty cursor indicates no more pages
     }
 }
 

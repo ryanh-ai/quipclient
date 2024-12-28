@@ -1023,9 +1023,10 @@ class QuipClient(object):
             
             # Handle pagination if requested
             if paginate and not post_data:
-                if "response_metadata" in result and "next_cursor" in result["response_metadata"]:
-                    cursor = result["response_metadata"].get("next_cursor", "")
-                    while cursor:  # Continue if cursor exists and is not None
+                if "response_metadata" in result:
+                    cursor = result["response_metadata"].get("next_cursor")
+                    # Only paginate if cursor exists and is not empty
+                    if cursor and isinstance(cursor, str) and cursor.strip():
                         next_page = self._fetch_json(path, cache=False, cursor=cursor, **args)
                         
                         # Merge the results
@@ -1034,11 +1035,10 @@ class QuipClient(object):
                         elif "html" in result and "html" in next_page:
                             result["html"] += next_page["html"]
                             
-                        cursor = next_page.get("response_metadata", {}).get("next_cursor", "")
-                    
-                    # Clean up pagination metadata since we've combined all pages
-                    if "response_metadata" in result:
-                        result["response_metadata"]["next_cursor"] = ""
+                    # Always ensure response_metadata exists with empty cursor
+                    if "response_metadata" not in result:
+                        result["response_metadata"] = {}
+                    result["response_metadata"]["next_cursor"] = ""
                         
             return result
         except HTTPError as error:
