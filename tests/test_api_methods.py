@@ -106,6 +106,7 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     assert result.read() == test_data["content"]
     mock_urlopen.assert_called_once()
 
+#AI instead of importing the list of tuples "BATCH_FOLDER_TEST_CASES" import each case one by one similar to how we did with others in this file
 @pytest.mark.parametrize("test_name,test_data", BATCH_FOLDER_TEST_CASES)
 def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
@@ -118,6 +119,8 @@ def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test
         assert result[key]["folder"]["title"] == value["folder"]["title"]
         assert result[key]["folder"]["type"] == value["folder"]["type"]
 
+#AI instead of importing the list of tuples "BATCH_FOLDER_TEST_CASES" import each case one by one similar to how we did with others in this file
+#AI!
 @pytest.mark.parametrize("test_name,test_data", BATCH_THREAD_TEST_CASES)
 def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
