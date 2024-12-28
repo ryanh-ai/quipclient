@@ -67,9 +67,15 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     result = quip_client.get_blob(test_data["thread_id"], test_data["blob_id"])
     
     # Verify the response content and headers
-    assert result.read() == test_data["content"]
+    content = result.read()
+    assert content == test_data["content"]
     assert result.headers["Content-Type"] == test_data["content_type"]
-    assert int(result.headers["Content-Length"]) == len(test_data["content"])
+    assert int(result.headers["Content-Length"]) == test_data["content_length"]
+    
+    # Test that we can read the content multiple times
+    result.seek(0)
+    second_read = result.read()
+    assert second_read == test_data["content"]
     
     # Verify the correct URL was called
     mock_urlopen.assert_called_once()
