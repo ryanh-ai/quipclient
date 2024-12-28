@@ -18,12 +18,23 @@ def mock_response():
     return _mock_response
 
 @pytest.fixture
-def quip_client(tmp_path):
-    """Returns a QuipClient instance with a temporary cache directory"""
-    return QuipClient(
+def quip_client(tmp_path, mock_urlopen, mock_response):
+    """Returns a QuipClient instance with a temporary cache directory and mocked auth"""
+    # Setup mock response for get_authenticated_user
+    mock_urlopen.return_value = mock_response(json_data={
+        "id": "TEST_USER_ID",
+        "name": "Test User",
+        "emails": ["test@example.com"]
+    })
+    
+    client = QuipClient(
         access_token="test_token",
         cache_dir=str(tmp_path / "cache")
     )
+    
+    # Reset mock for subsequent test calls
+    mock_urlopen.reset_mock()
+    return client
 
 @pytest.fixture
 def mock_urlopen(monkeypatch):
