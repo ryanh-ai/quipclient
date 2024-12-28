@@ -104,7 +104,13 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     assert result.read() == test_data["content"]
     mock_urlopen.assert_called_once()
 
-@pytest.mark.parametrize("test_name,test_data", BATCH_FOLDER_TEST_CASES)
+@pytest.mark.parametrize("test_name,test_data", [
+    ("simple_folders", {
+        "FOLDER1": {"folder": {"id": "FOLDER1", "title": "Test 1", "type": "folder"}},
+        "FOLDER2": {"folder": {"id": "FOLDER2", "title": "Test 2", "type": "folder"}}
+    }),
+    ("empty_folders", {})
+])
 def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
@@ -116,7 +122,13 @@ def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test
         assert result[key]["folder"]["title"] == value["folder"]["title"]
         assert result[key]["folder"]["type"] == value["folder"]["type"]
 
-@pytest.mark.parametrize("test_name,test_data", BATCH_THREAD_TEST_CASES)
+@pytest.mark.parametrize("test_name,test_data", [
+    ("simple_threads", {
+        "THREAD1": {"thread": {"id": "THREAD1", "title": "Thread 1", "type": "document"}},
+        "THREAD2": {"thread": {"id": "THREAD2", "title": "Thread 2", "type": "document"}}
+    }),
+    ("empty_threads", {})
+])
 def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
