@@ -104,6 +104,7 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     assert result.read() == test_data["content"]
     mock_urlopen.assert_called_once()
 
+# AI please move these test cases to test_data but import them, see `test_get_messages_variations` as an example
 @pytest.mark.parametrize("test_name,test_data", [
     ("simple_folders", {
         "FOLDER1": {"folder": {"id": "FOLDER1", "title": "Test 1", "type": "folder"}},
@@ -122,6 +123,7 @@ def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test
         assert result[key]["folder"]["title"] == value["folder"]["title"]
         assert result[key]["folder"]["type"] == value["folder"]["type"]
 
+# AI! please move these test cases to test_data but import them, see `test_get_messages_variations` as an example
 @pytest.mark.parametrize("test_name,test_data", [
     ("simple_threads", {
         "THREAD1": {"thread": {"id": "THREAD1", "title": "Thread 1", "type": "document"}},
