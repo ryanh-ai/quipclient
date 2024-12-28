@@ -1,34 +1,4 @@
-# Copyright 2014 Quip
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
-
-"""A Quip API client library.
-
-For full API documentation, visit https://quip.com/api/.
-
-Typical usage:
-
-    client = quip.QuipClient(access_token=...)
-    user = client.get_authenticated_user()
-    starred = client.get_folder(user["starred_folder_id"])
-    print "There are", len(starred["children"]), "items in your starred folder"
-
-In addition to standard getters and setters, we provide a few convenience
-methods for document editing. For example, you can use `add_to_first_list`
-to append items (in Markdown) to the first bulleted or checklist in a
-given document, which is useful for automating a task list.
-"""
-
+from .base import BaseQuipClient, QuipError
 import datetime
 import json
 import logging
@@ -37,37 +7,7 @@ import ssl
 import sys
 import time
 import xml.etree.cElementTree
-from diskcache import Cache
 import zlib
-
-PY3 = sys.version_info > (3,)
-
-if PY3:
-    import urllib.request
-    import urllib.parse
-    import urllib.error
-
-    Request = urllib.request.Request
-    urlencode = urllib.parse.urlencode
-    urlopen = urllib.request.urlopen
-    HTTPError = urllib.error.HTTPError
-
-    iteritems = dict.items
-
-else:
-    import urllib
-    import urllib2
-
-    Request = urllib2.Request
-    urlencode = urllib.urlencode
-    urlopen = urllib2.urlopen
-    HTTPError = urllib2.HTTPError
-
-    iteritems = dict.iteritems
-
-
-# Python 3 uses UTF-8 by default
-pass
 
 try:
     ssl.PROTOCOL_TLSv1_1
@@ -75,34 +15,9 @@ except AttributeError:
     raise Exception(
         "Using the Quip API requires an SSL library that supports TLS versions "
         ">= 1.1; your Python + OpenSSL installation must be upgraded.")
-# After 2017-02, the Quip API HTTPS endpoint requires TLS version 1.1 or later;
-# TLS version 1.0 is disabled due to extensive security vulnerabilities.
-#
-# - macOS: At this time of this writing, macOS ships with Python 2.7 and
-#   OpenSSL, but the version of OpenSSL is outdated and only supports TLS 1.0.
-#   (This is even true of the most recent version of macOS (Sierra) with all
-#   security patches installed; see
-#   https://eclecticlight.co/2016/03/23/the-tls-mess-in-os-x-el-capitan/ .)
-#
-#   To use this module on a macOS system, you will need to install your own
-#   copy of Python and OpenSSL. Simple suggestions:
-#
-#   1) Install Homebrew from http://brew.sh; run "brew install openssl python"
-#   2) Install Miniconda from https://conda.io/miniconda.html
-#
-# - Google App Engine (GAE): Per App Engine's documentation, you must request
-#   version 2.7.11 of the "ssl" library in your app.yaml file. See:
-#   https://cloud.google.com/appengine/docs/python/sockets/ssl_support
 
 
-class QuipError(Exception):
-    def __init__(self, code, message, http_error):
-        Exception.__init__(self, "%d: %s" % (code, message))
-        self.code = code
-        self.http_error = http_error
-
-
-class QuipClient(object):
+class QuipClient(BaseQuipClient):
     """A Quip API client"""
     # Cache TTL constants (in seconds)
     ONE_HOUR = 3600

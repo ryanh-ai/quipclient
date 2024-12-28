@@ -1,4 +1,5 @@
 # quipclient/quip/__init__.py
-from quipclient.quip import QuipClient, QuipError
+from quipclient.base import BaseQuipClient, QuipError
+from quipclient.quip import QuipClient
 
-__all__ = ['QuipClient', 'QuipError']
+__all__ = ['BaseQuipClient', 'QuipClient', 'QuipError']
