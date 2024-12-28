@@ -2,6 +2,8 @@ import pytest
 from unittest.mock import Mock
 from quipclient import QuipClient
 from .test_data.users import BASIC_USER, EMAIL_USER, AUTH_USER
+from .test_data.batch_folders import BATCH_FOLDER_TEST_CASES
+from .test_data.batch_threads import BATCH_THREAD_TEST_CASES
 from .test_data.folders import PRIVATE_FOLDER, SHARED_FOLDER
 from .test_data.threads import SIMPLE_THREAD, COMPLEX_THREAD
 from .test_data.contacts import BASIC_CONTACTS, EMPTY_CONTACTS
@@ -104,14 +106,7 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     assert result.read() == test_data["content"]
     mock_urlopen.assert_called_once()
 
-# AI please move these test cases to test_data but import them, see `test_get_messages_variations` as an example
-@pytest.mark.parametrize("test_name,test_data", [
-    ("simple_folders", {
-        "FOLDER1": {"folder": {"id": "FOLDER1", "title": "Test 1", "type": "folder"}},
-        "FOLDER2": {"folder": {"id": "FOLDER2", "title": "Test 2", "type": "folder"}}
-    }),
-    ("empty_folders", {})
-])
+@pytest.mark.parametrize("test_name,test_data", BATCH_FOLDER_TEST_CASES)
 def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
@@ -123,14 +118,7 @@ def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test
         assert result[key]["folder"]["title"] == value["folder"]["title"]
         assert result[key]["folder"]["type"] == value["folder"]["type"]
 
-# AI! please move these test cases to test_data but import them, see `test_get_messages_variations` as an example
-@pytest.mark.parametrize("test_name,test_data", [
-    ("simple_threads", {
-        "THREAD1": {"thread": {"id": "THREAD1", "title": "Thread 1", "type": "document"}},
-        "THREAD2": {"thread": {"id": "THREAD2", "title": "Thread 2", "type": "document"}}
-    }),
-    ("empty_threads", {})
-])
+@pytest.mark.parametrize("test_name,test_data", BATCH_THREAD_TEST_CASES)
 def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
