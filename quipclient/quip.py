@@ -1042,14 +1042,14 @@ class QuipClient(object):
             response = urlopen(request, timeout=self.request_timeout)
             
             # Update rate limit tracking from response headers
-            self._rate_limit = int(response.headers.get('X-RateLimit-Limit', 0))
-            self._rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining', 0))
-            self._rate_limit_reset = float(response.headers.get('X-RateLimit-Reset', 0))
+            self._rate_limit = int(response.headers.get('X-RateLimit-Limit')) if 'X-RateLimit-Limit' in response.headers else None
+            self._rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining')) if 'X-RateLimit-Remaining' in response.headers else None
+            self._rate_limit_reset = float(response.headers.get('X-RateLimit-Reset')) if 'X-RateLimit-Reset' in response.headers else None
             
-            self._company_rate_limit = int(response.headers.get('X-Company-RateLimit-Limit', 0))
-            self._company_rate_limit_remaining = int(response.headers.get('X-Company-RateLimit-Remaining', 0))
-            self._company_rate_limit_reset = float(response.headers.get('X-Company-RateLimit-Reset', 0))
-            self._company_retry_after = int(response.headers.get('X-Company-Retry-After', 0))
+            self._company_rate_limit = int(response.headers.get('X-Company-RateLimit-Limit')) if 'X-Company-RateLimit-Limit' in response.headers else None
+            self._company_rate_limit_remaining = int(response.headers.get('X-Company-RateLimit-Remaining')) if 'X-Company-RateLimit-Remaining' in response.headers else None
+            self._company_rate_limit_reset = float(response.headers.get('X-Company-RateLimit-Reset')) if 'X-Company-RateLimit-Reset' in response.headers else None
+            self._company_retry_after = int(response.headers.get('X-Company-Retry-After')) if 'X-Company-Retry-After' in response.headers else None
             
             response_data = response.read().decode()
             result = json.loads(response_data)
