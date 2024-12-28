@@ -36,6 +36,7 @@ def quip_client(tmp_path, mock_urlopen, mock_response):
     mock_urlopen.reset_mock()
     return client
 
+#AI! does the path of this monkey patch need to change with our reorganization?
 @pytest.fixture
 def mock_urlopen(monkeypatch):
     """Mocks urllib's urlopen for testing HTTP requests"""
