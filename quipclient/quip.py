@@ -846,10 +846,9 @@ class QuipClient(BaseQuipClient):
                 raise error
             raise QuipError(error.response.status_code, message, error)
 
-    #AI! lets eliminate this, and make _urlopen available as a member of the BaseQuipClient, and anywhere urlopen is needed in child classes can access it
     def _fetch_blob(self, request):
         """Internal method to fetch blob data using the configured urlopen"""
-        return urlopen(request, timeout=self.request_timeout)
+        return self._urlopen(request)
 
     def new_websocket(self, **kwargs):
         """Gets a websocket URL to connect to.
