@@ -28,21 +28,4 @@ BLOB_TEST_CASES = [
     ("binary_blob", BINARY_BLOB)
 ]
 
-# Batch folder test cases
-BATCH_FOLDER_TEST_CASES = [
-    ("simple_folders", {
-        "FOLDER1": {"folder": {"id": "FOLDER1", "title": "Test 1", "type": "folder"}},
-        "FOLDER2": {"folder": {"id": "FOLDER2", "title": "Test 2", "type": "folder"}}
-    }),
-    ("empty_folders", {})
-]
-
-# Batch thread test cases
-BATCH_THREAD_TEST_CASES = [
-    ("simple_threads", {
-        "THREAD1": {"thread": {"id": "THREAD1", "title": "Thread 1", "type": "document"}},
-        "THREAD2": {"thread": {"id": "THREAD2", "title": "Thread 2", "type": "document"}}
-    }),
-    ("empty_threads", {})
-]
 
