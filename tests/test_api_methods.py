@@ -118,6 +118,7 @@ def test_batch_operations(quip_client, mock_urlopen, mock_response, test_name, t
     
     assert len(result) == len(test_data)
     for key, value in test_data.items():
-        assert result[key][value["folder" if "folder" in value else "thread"]["type"]] == value[value["folder" if "folder" in value else "thread"]["type"]]
-        assert result[key][value["folder" if "folder" in value else "thread"]["type"]]["id"] == value[value["folder" if "folder" in value else "thread"]["type"]]["id"]
-        assert result[key][value["folder" if "folder" in value else "thread"]["type"]]["title"] == value[value["folder" if "folder" in value else "thread"]["type"]]["title"]
+        entity_type = "folder" if "folder" in value else "thread"
+        assert result[key][entity_type]["id"] == value[entity_type]["id"]
+        assert result[key][entity_type]["title"] == value[entity_type]["title"]
+        assert result[key][entity_type]["type"] == value[entity_type]["type"]
