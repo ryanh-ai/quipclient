@@ -25,7 +25,7 @@ def test_get_threads_v2_from_shared_folders(quip_client, shared_folder_ids):
     
     # Verify response structure
     assert len(result) > 0
-    thread = next(iter(result.values()))
+    thread = next(iter(result.values()))["thread"]  # Access nested thread data
     assert "id" in thread
     assert "title" in thread
     assert "type" in thread
