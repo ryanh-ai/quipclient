@@ -34,15 +34,17 @@ def test_get_authenticated_user(quip_client, mock_urlopen, mock_response):
 def test_get_folders(quip_client, mock_urlopen, mock_response):
     mock_urlopen.return_value = mock_response(json_data=FOLDERS_DATA)
     
-    result = quip_client.get_folders(["folder1", "folder2"])
-    assert len(result) == 2
+    result = quip_client.get_folders(["folder1", "folder2", "folder3"])
+    assert len(result) == 3
     assert result["folder1"]["folder"]["title"] == "Mock Folder 1"
-    assert result["folder2"]["folder"]["title"] == "Mock Folder 2"
+    assert result["folder2"]["folder"]["title"] == "Mock Folder 2" 
+    assert result["folder3"]["folder"]["title"] == "Mock Folder 3"
 
 def test_get_threads(quip_client, mock_urlopen, mock_response):
     mock_urlopen.return_value = mock_response(json_data=THREADS_DATA)
     
-    result = quip_client.get_threads(["thread1", "thread2"])
-    assert len(result) == 2
+    result = quip_client.get_threads(["thread1", "thread2", "thread3"])
+    assert len(result) == 3
     assert result["thread1"]["thread"]["title"] == "Mock Thread 1"
     assert result["thread2"]["thread"]["title"] == "Mock Thread 2"
+    assert result["thread3"]["thread"]["title"] == "Template Document"
