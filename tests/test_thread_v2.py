@@ -51,15 +51,41 @@ def test_get_thread_folders_v2(quip_client, mock_urlopen, mock_response):
     assert result["response_metadata"]["next_cursor"] == ""  # Should be empty after pagination
 
 def test_get_thread_html_v2(quip_client, mock_urlopen, mock_response):
-    """Test getting thread HTML with v2 API"""
-    mock_urlopen.return_value = mock_response(json_data=THREAD_HTML_V2)
+    """Test getting thread HTML with v2 API including pagination"""
+    # Setup mock responses for pagination
+    first_page = {
+        "html": "<h1>Document Title</h1><p>First page</p>",
+        "response_metadata": {"next_cursor": "page2"}
+    }
+    second_page = {
+        "html": "<p>Second page</p>",
+        "response_metadata": {"next_cursor": ""}
+    }
     
+    # Configure mock to return different responses for each call
+    mock_urlopen.side_effect = [
+        mock_response(json_data=first_page),
+        mock_response(json_data=second_page)
+    ]
+    
+    # Make the API call
     result = quip_client.get_thread_html_v2("THREAD123")
     
+    # Verify the response
     assert "html" in result
     assert result["html"].startswith("<h1>Document Title</h1>")
+    assert "<p>First page</p>" in result["html"]
+    assert "<p>Second page</p>" in result["html"]
     assert "response_metadata" in result
-    assert "next_cursor" in result["response_metadata"]
+    assert result["response_metadata"]["next_cursor"] == ""  # Empty after all pages
+    
+    # Verify correct URLs were called
+    calls = mock_urlopen.call_args_list
+    first_url = calls[0][0][0].get_full_url()
+    second_url = calls[1][0][0].get_full_url()
+    
+    assert "cursor" not in first_url
+    assert "cursor=page2" in second_url
 
 def test_thread_v2_pagination_url_construction(quip_client, mock_urlopen, mock_response):
     """Test that pagination URLs are correctly constructed"""
