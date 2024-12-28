@@ -1006,7 +1006,8 @@ class QuipClient(object):
         if self._rate_limit_reset and now < self._rate_limit_reset and self._rate_limit_remaining == 0:
             sleep_time = self._rate_limit_reset - now
             time.sleep(sleep_time)
-        elif self._company_retry_after and now < self._company_rate_limit_reset:
+        elif (self._company_retry_after and now < self._company_rate_limit_reset and 
+              (self._company_rate_limit_remaining == 0 or self._company_rate_limit_remaining is None)):
             sleep_time = self._company_rate_limit_reset - now
             time.sleep(sleep_time)
 
