@@ -950,10 +950,7 @@ class QuipClient(BaseQuipClient):
             post_data = dict((k, v) for k, v in post_data.items()
                              if v or isinstance(v, int))
             request_data = urlencode(self._clean(**post_data))
-            if PY3:
-                request.data = request_data.encode()
-            else:
-                request.data = request_data
+            request.data = request_data.encode()
 
         if self.access_token:
             request.add_header("Authorization", "Bearer " + self.access_token)
