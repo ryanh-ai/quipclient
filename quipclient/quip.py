@@ -308,7 +308,7 @@ class QuipClient(object):
         return self._cached_get("2/threads", ids, None if not cache else cache_ttl,
                               batch_size=self.MAX_THREADS_PER_REQUEST, cache=cache)
 
-    def get_thread_folders_v2(self, thread_id_or_path, timeout=30):
+    def get_thread_folders_v2(self, thread_id_or_path, timeout=30, cursor=None):
         """Returns complete list of folders containing the thread using v2 API.
         
         Args:
