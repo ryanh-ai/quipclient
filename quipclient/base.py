@@ -284,3 +284,7 @@ class BaseQuipClient:
         if args:
             url += "?" + urlencode(args)
         return url
+
+    def _urlopen(self, request):
+        """Internal method to fetch data using the configured urlopen"""
+        return urlopen(request, timeout=self.request_timeout)
