@@ -9,8 +9,7 @@ from .test_data.teams import BASIC_TEAMS, TEAM_WITH_MEMBERS
 from .test_data.messages import BASIC_MESSAGES, MESSAGES_WITH_ATTACHMENTS
 from .test_data.blobs import (
     BLOB_TEST_CASES,
-    FOLDERS_BATCH,
-    THREADS_BATCH
+    BATCH_TEST_CASES
 )
 from io import BytesIO
 
