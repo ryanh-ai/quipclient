@@ -92,17 +92,30 @@ def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test
         assert result[key]["folder"]["title"] == value["folder"]["title"]
         assert result[key]["folder"]["type"] == value["folder"]["type"]
 
-@pytest.mark.parametrize("test_name,test_data", [
-    ("simple_threads", SIMPLE_THREADS),
-    ("empty_threads", EMPTY_THREADS)
-])
+@pytest.mark.parametrize("test_name,test_data", BATCH_THREAD_TEST_CASES)
 def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
+    """Test fetching different batch sizes of threads"""
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
-    result = quip_client.get_threads(list(test_data.keys()))
+    # First call to test API fetch
+    result1 = quip_client.get_threads(list(test_data.keys()))
+    assert len(result1) == len(test_data)
     
-    assert len(result) == len(test_data)
+    # Verify the response data
     for key, value in test_data.items():
-        assert result[key]["thread"]["id"] == value["thread"]["id"]
-        assert result[key]["thread"]["title"] == value["thread"]["title"]
-        assert result[key]["thread"]["type"] == value["thread"]["type"]
+        assert result1[key]["thread"]["id"] == value["thread"]["id"]
+        assert result1[key]["thread"]["title"] == value["thread"]["title"]
+        assert result1[key]["thread"]["type"] == value["thread"]["type"]
+    
+    # Second call to test caching
+    result2 = quip_client.get_threads(list(test_data.keys()))
+    assert result2 == result1
+    
+    # Verify API was only called once due to caching
+    assert mock_urlopen.call_count == 1
+    
+    # For large batches, verify correct batch size was used
+    if len(test_data) > quip_client.MAX_THREADS_PER_REQUEST:
+        expected_batches = (len(test_data) + quip_client.MAX_THREADS_PER_REQUEST - 1) 
+        // quip_client.MAX_THREADS_PER_REQUEST
+        assert mock_urlopen.call_count == expected_batches
