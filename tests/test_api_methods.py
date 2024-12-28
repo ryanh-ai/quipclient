@@ -63,7 +63,7 @@ def test_get_authenticated_user(quip_client, mock_urlopen, mock_response):
     
     result = quip_client.get_authenticated_user()
     assert result["id"] == "auth_user"
-    assert result["emails"][0] == "test@example.com"
+    assert result["emails"][0] == "user@example.com"
     assert mock_urlopen.call_count == 1
 
 def test_get_folders(quip_client, mock_urlopen, mock_response):
@@ -107,7 +107,7 @@ def test_get_folders(quip_client, mock_urlopen, mock_response):
     
     result = quip_client.get_folders(["folder1", "folder2"])
     assert len(result) == 2
-    assert result["folder1"]["folder"]["title"] == "Test Folder 1"
+    assert result["folder1"]["folder"]["title"] == "Mock Folder 1"
     assert result["folder2"]["folder"]["title"] == "Test Folder 2"
 
 def test_get_threads(quip_client, mock_urlopen, mock_response):
@@ -155,5 +155,5 @@ def test_get_threads(quip_client, mock_urlopen, mock_response):
     
     result = quip_client.get_threads(["thread1", "thread2"])
     assert len(result) == 2
-    assert result["thread1"]["thread"]["title"] == "Test Thread 1"
+    assert result["thread1"]["thread"]["title"] == "Mock Thread 1"
     assert result["thread2"]["thread"]["title"] == "Test Thread 2"
