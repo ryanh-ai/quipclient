@@ -7,7 +7,7 @@ from .test_data.threads import SIMPLE_THREAD, COMPLEX_THREAD
 from .test_data.contacts import BASIC_CONTACTS, EMPTY_CONTACTS
 from .test_data.teams import BASIC_TEAMS, TEAM_WITH_MEMBERS
 from .test_data.messages import BASIC_MESSAGES, MESSAGES_WITH_ATTACHMENTS
-from .test_data.blobs import BLOB_TEST_CASES, BATCH_FOLDER_TEST_CASES, BATCH_THREAD_TEST_CASES
+from .test_data.blobs import BLOB_TEST_CASES
 from io import BytesIO
 
 @pytest.mark.parametrize("test_name,test_data", [
