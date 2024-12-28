@@ -1081,9 +1081,11 @@ class QuipClient(object):
                     for k, v in args.items() if v or isinstance(v, int))
 
     def _url(self, path, cursor=None, **args):
-        # Skip adding /1/ prefix if path already starts with /2/
-        version_prefix = "" if path.startswith("2/") else "/1/"
-        url = self.base_url + version_prefix + path
+        # Handle API version prefix
+        if path.startswith("2/"):
+            url = self.base_url + "/2/" + path[2:]  # Remove "2/" and re-add it with leading slash
+        else:
+            url = self.base_url + "/1/" + path
         
         # Handle cursor separately to ensure it's included in URL when present
         if cursor:
