@@ -965,6 +965,7 @@ class QuipClient(object):
         return dict((k, str(v) if isinstance(v, int) else v.encode("utf-8"))
                     for k, v in args.items() if v or isinstance(v, int))
 
+    #TODO: add support for detecting when path starts with `/2/` and skipping the `/1/`
     def _url(self, path, **args):
         url = self.base_url + "/1/" + path
         args = self._clean(**args)
