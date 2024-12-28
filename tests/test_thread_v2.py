@@ -52,8 +52,36 @@ def test_get_thread_html_v2(quip_client, mock_urlopen, mock_response):
     assert "response_metadata" in result
     assert "next_cursor" in result["response_metadata"]
 
-def test_thread_v2_pagination(quip_client, mock_urlopen, mock_response):
-    """Test pagination parameters for v2 API methods"""
+def test_thread_v2_pagination_url_construction(quip_client, mock_urlopen, mock_response):
+    """Test that pagination URLs are correctly constructed"""
+    # Setup mock responses
+    first_page = {
+        "folders": [{"folder_id": "FOLDER1"}],
+        "response_metadata": {"next_cursor": "page2_cursor"}
+    }
+    second_page = {
+        "folders": [{"folder_id": "FOLDER2"}],
+        "response_metadata": {"next_cursor": ""}
+    }
+    mock_urlopen.side_effect = [
+        mock_response(json_data=first_page),
+        mock_response(json_data=second_page)
+    ]
+
+    # Make API calls
+    quip_client.get_thread_folders_v2("THREAD123")
+    quip_client.get_thread_folders_v2("THREAD123", cursor="page2_cursor")
+
+    # Verify URL construction
+    calls = mock_urlopen.call_args_list
+    first_url = calls[0][0][0].get_full_url()
+    second_url = calls[1][0][0].get_full_url()
+    
+    assert "cursor" not in first_url
+    assert "cursor=page2_cursor" in second_url
+
+def test_thread_v2_pagination_flow(quip_client, mock_urlopen, mock_response):
+    """Test complete pagination flow including response handling"""
     # Mock first page response
     first_page = {
         "folders": [
@@ -96,11 +124,3 @@ def test_thread_v2_pagination(quip_client, mock_urlopen, mock_response):
     assert len(result2["folders"]) == 2
     assert result2["folders"][0]["folder_id"] == "FOLDER3"
     assert result2["response_metadata"]["next_cursor"] == ""  # Empty indicates end
-    
-    # Verify correct URLs were called
-    calls = mock_urlopen.call_args_list
-    assert len(calls) == 2
-    first_url = calls[0][0][0].get_full_url()
-    second_url = calls[1][0][0].get_full_url()
-    assert "cursor" not in first_url  # First request should not have cursor
-    assert "cursor=page2_cursor" in second_url  # Second should have cursor

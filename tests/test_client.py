@@ -10,6 +10,11 @@ def test_url_construction(quip_client):
     url = quip_client._url("threads/123", count=5)
     assert url == "https://platform.quip.com/1/threads/123?count=5"
 
+def test_url_with_cursor(quip_client):
+    """Test that cursor parameter is properly included in URL construction"""
+    url = quip_client._url("2/threads/123/folders", cursor="test_cursor")
+    assert "cursor=test_cursor" in url
+
 def test_clean_params(quip_client):
     cleaned = quip_client._clean(count=5, title="test")
     assert cleaned["count"] == "5"
