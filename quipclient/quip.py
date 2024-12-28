@@ -113,6 +113,11 @@ class QuipClient(object):
     ONE_DAY = 86400
     THIRTY_DAYS = 2592000
 
+    # Maximum entities per API request
+    MAX_USERS_PER_REQUEST = 100
+    MAX_FOLDERS_PER_REQUEST = 100  
+    MAX_THREADS_PER_REQUEST = 10
+
     # Edit operations
     APPEND, \
         PREPEND, \
@@ -184,9 +189,12 @@ class QuipClient(object):
         """Returns the user with the given ID."""
         return self._fetch_json("users/" + id, cache=True, cache_ttl=cache_ttl)
 
-    def get_users(self, ids):
-        """Returns a dictionary of users for the given IDs."""
-        return self._fetch_json("users/", post_data={"ids": ",".join(ids)})
+    def get_users(self, ids, cache_ttl=THIRTY_DAYS):
+        """Returns a dictionary of users for the given IDs.
+        
+        Uses caching to optimize repeated requests for the same users.
+        """
+        return self._cached_get("users", ids, cache_ttl, batch_size=self.MAX_USERS_PER_REQUEST)
 
     def update_user(self, user_id, picture_url=None):
         return self._fetch_json("users/update", post_data={
@@ -202,9 +210,12 @@ class QuipClient(object):
         """Returns the folder with the given ID."""
         return self._fetch_json("folders/" + id, cache=True, cache_ttl=cache_ttl)
 
-    def get_folders(self, ids):
-        """Returns a dictionary of folders for the given IDs."""
-        return self._fetch_json("folders/", post_data={"ids": ",".join(ids)})
+    def get_folders(self, ids, cache_ttl=THIRTY_DAYS):
+        """Returns a dictionary of folders for the given IDs.
+        
+        Uses caching to optimize repeated requests for the same folders.
+        """
+        return self._cached_get("folders", ids, cache_ttl, batch_size=self.MAX_FOLDERS_PER_REQUEST)
 
     def new_folder(self, title, parent_id=None, color=None, member_ids=[]):
         return self._fetch_json("folders/new", post_data={
@@ -268,9 +279,62 @@ class QuipClient(object):
         """Returns the thread with the given ID."""
         return self._fetch_json("threads/" + id)
 
-    def get_threads(self, ids):
-        """Returns a dictionary of threads for the given IDs."""
-        return self._fetch_json("threads/", post_data={"ids": ",".join(ids)})
+    def _cached_get(self, endpoint, ids, cache_ttl=THIRTY_DAYS, batch_size=10):
+        """Helper method to handle cached bulk entity fetching.
+        
+        Args:
+            endpoint: API endpoint (e.g. "threads", "users", "folders")
+            ids: List of entity IDs to fetch
+            cache_ttl: Cache TTL in seconds
+            
+        Returns:
+            Dictionary of entity data keyed by ID
+        """
+        result = {}
+        uncached_ids = []
+        
+        # Check cache for each ID
+        for entity_id in ids:
+            cache_key = f"{self._user_id or '_'}:{endpoint}/{entity_id}"
+            cached_data = self._cache.get(cache_key)
+            if cached_data:
+                try:
+                    entity_data = json.loads(zlib.decompress(cached_data).decode())
+                    result.update(entity_data)
+                except:
+                    uncached_ids.append(entity_id)
+            else:
+                uncached_ids.append(entity_id)
+        
+        # If we have any uncached IDs, fetch them in batches
+        if uncached_ids:
+            new_data = {}
+            # Process in batches
+            for i in range(0, len(uncached_ids), batch_size):
+                batch = uncached_ids[i:i + batch_size]
+                batch_data = self._fetch_json(f"{endpoint}/", post_data={"ids": ",".join(batch)})
+                new_data.update(batch_data)
+            
+            # Cache individual responses
+            for entity_id, entity_data in new_data.items():
+                cache_key = f"{self._user_id or '_'}:{endpoint}/{entity_id}"
+                entity_cache = {entity_id: entity_data}
+                self._cache.set(
+                    cache_key,
+                    zlib.compress(json.dumps(entity_cache).encode()),
+                    cache_ttl
+                )
+            
+            result.update(new_data)
+            
+        return result
+
+    def get_threads(self, ids, cache_ttl=THIRTY_DAYS):
+        """Returns a dictionary of threads for the given IDs.
+        
+        Uses caching to optimize repeated requests for the same threads.
+        """
+        return self._cached_get("threads", ids, cache_ttl, batch_size=self.MAX_THREADS_PER_REQUEST)
 
     def get_recent_threads(self, max_updated_usec=None, count=None, **kwargs):
         """Returns the recently updated threads for a given user."""
