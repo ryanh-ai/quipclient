@@ -6,3 +6,5 @@ TAGS
 *.swp
 *.swo
 *.tar.gz
+.aider*
+.env
