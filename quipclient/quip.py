@@ -284,9 +284,9 @@ class QuipClient(object):
 
     def get_thread(self, id, cache=True, cache_ttl=THIRTY_DAYS):
         """Returns the thread with the given ID."""
-        return self._fetch_json("2/threads/" + id, cache=cache, cache_ttl=cache_ttl)
+        return self._fetch_json("threads/" + id, cache=cache, cache_ttl=cache_ttl)
 
-    def _cached_get(self, endpoint, ids, cache_ttl=THIRTY_DAYS, batch_size=10, cache=True):
+    def _cached_get(self, endpoint, ids, cache_ttl=THIRTY_DAYS, batch_size=100, cache=True):
         """Helper method to handle cached bulk entity fetching.
         
         Args:
@@ -347,7 +347,7 @@ class QuipClient(object):
         
         Uses caching to optimize repeated requests for the same threads.
         """
-        return self._cached_get("2/threads", ids, None if not cache else cache_ttl,
+        return self._cached_get("threads", ids, None if not cache else cache_ttl,
                               batch_size=self.MAX_THREADS_PER_REQUEST, cache=cache)
 
     def get_recent_threads(self, max_updated_usec=None, count=None, **kwargs):
