@@ -57,7 +57,10 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     # Setup mock response with headers and content
     mock_resp = Mock()
     mock_resp.read = lambda: test_data["content"]
-    mock_resp.headers = test_data["expected_headers"]
+    mock_resp.headers = {
+        "Content-Type": test_data["content_type"],
+        "Content-Length": str(len(test_data["content"]))
+    }
     mock_urlopen.return_value = mock_resp
     
     # Call get_blob with thread_id and blob_id
