@@ -308,6 +308,7 @@ class QuipClient(object):
         return self._cached_get("2/threads", ids, None if not cache else cache_ttl,
                               batch_size=self.MAX_THREADS_PER_REQUEST, cache=cache)
 
+    # AI, please hide the cursor from the user and fetch full thread on behalf of user; it likely makes sense to capture this in fetch_json
     def get_thread_folders_v2(self, thread_id_or_path, cursor=None):
         """Returns list of folders containing the thread using v2 API.
         
@@ -320,6 +321,7 @@ class QuipClient(object):
         return self._fetch_json(f"2/threads/{thread_id_or_path}/folders",
                               cursor=cursor, cache=False)
 
+    # AI!, please hide the cursor from the user and fetch full thread on behalf of user; it likely makes sense to capture this in fetch_json
     def get_thread_html_v2(self, thread_id_or_path, cursor=None, limit=None):
         """Returns thread HTML content using v2 API.
         
