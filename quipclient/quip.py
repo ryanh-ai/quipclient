@@ -309,14 +309,16 @@ class QuipClient(object):
                               batch_size=self.MAX_THREADS_PER_REQUEST, cache=cache)
 
     def get_thread_folders_v2(self, thread_id_or_path, timeout=30, cursor=None):
-        """Returns complete list of folders containing the thread using v2 API.
+        """Returns list of folders containing the thread using v2 API.
         
         Args:
             thread_id_or_path: Thread ID or secret path
             timeout: Request timeout in seconds (default 30)
+            cursor: Pagination cursor for getting next page
             
         Returns:
-            Combined results from all pages of folder data.
+            Single page of folder data. Use cursor from response_metadata
+            to get subsequent pages.
             
         Raises:
             QuipError: If the API request fails
@@ -325,9 +327,10 @@ class QuipClient(object):
         try:
             return self._fetch_json(
                 f"2/threads/{thread_id_or_path}/folders",
-                paginate=True, 
+                paginate=False,
                 cache=False,
-                timeout=timeout
+                timeout=timeout,
+                cursor=cursor
             )
         except Exception as e:
             if isinstance(e, QuipError):
