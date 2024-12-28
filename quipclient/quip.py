@@ -199,7 +199,8 @@ class QuipClient(object):
         
         Uses caching to optimize repeated requests for the same users.
         """
-        return self._cached_get("users", ids, None if not cache else cache_ttl, batch_size=self.MAX_USERS_PER_REQUEST)
+        return self._cached_get("users", ids, None if not cache else cache_ttl, 
+                              batch_size=self.MAX_USERS_PER_REQUEST, cache=cache)
 
     def update_user(self, user_id, picture_url=None):
         return self._fetch_json("users/update", post_data={
@@ -220,7 +221,8 @@ class QuipClient(object):
         
         Uses caching to optimize repeated requests for the same folders.
         """
-        return self._cached_get("folders", ids, None if not cache else cache_ttl, batch_size=self.MAX_FOLDERS_PER_REQUEST)
+        return self._cached_get("folders", ids, None if not cache else cache_ttl,
+                              batch_size=self.MAX_FOLDERS_PER_REQUEST, cache=cache)
 
     def new_folder(self, title, parent_id=None, color=None, member_ids=[]):
         return self._fetch_json("folders/new", post_data={
@@ -284,13 +286,15 @@ class QuipClient(object):
         """Returns the thread with the given ID."""
         return self._fetch_json("2/threads/" + id, cache=cache, cache_ttl=cache_ttl)
 
-    def _cached_get(self, endpoint, ids, cache_ttl=THIRTY_DAYS, batch_size=10):
+    def _cached_get(self, endpoint, ids, cache_ttl=THIRTY_DAYS, batch_size=10, cache=True):
         """Helper method to handle cached bulk entity fetching.
         
         Args:
             endpoint: API endpoint (e.g. "threads", "users", "folders")
             ids: List of entity IDs to fetch
             cache_ttl: Cache TTL in seconds
+            batch_size: Number of items to fetch per request
+            cache: Whether to use caching (default True)
             
         Returns:
             Dictionary of entity data keyed by ID
@@ -298,18 +302,21 @@ class QuipClient(object):
         result = {}
         uncached_ids = []
         
-        # Check cache for each ID
-        for entity_id in ids:
-            cache_key = f"{self._user_id or '_'}:{endpoint}/{entity_id}"
-            cached_data = self._cache.get(cache_key)
-            if cached_data:
-                try:
-                    entity_data = json.loads(zlib.decompress(cached_data).decode())
-                    result.update(entity_data)
-                except:
+        # Check cache for each ID if caching is enabled
+        if cache:
+            for entity_id in ids:
+                cache_key = f"{self._user_id or '_'}:{endpoint}/{entity_id}"
+                cached_data = self._cache.get(cache_key)
+                if cached_data:
+                    try:
+                        entity_data = json.loads(zlib.decompress(cached_data).decode())
+                        result.update(entity_data)
+                    except:
+                        uncached_ids.append(entity_id)
+                else:
                     uncached_ids.append(entity_id)
-            else:
-                uncached_ids.append(entity_id)
+        else:
+            uncached_ids = ids
         
         # Only make API calls if we have uncached IDs
         if uncached_ids:
@@ -320,15 +327,16 @@ class QuipClient(object):
                 batch_data = self._fetch_json(f"{endpoint}/", ids=",".join(batch))
                 new_data.update(batch_data)
             
-            # Cache individual responses
-            for entity_id, entity_data in new_data.items():
-                cache_key = f"{self._user_id or '_'}:{endpoint}/{entity_id}"
-                entity_cache = {entity_id: entity_data}
-                self._cache.set(
-                    cache_key,
-                    zlib.compress(json.dumps(entity_cache).encode()),
-                    cache_ttl
-                )
+            # Cache individual responses if caching is enabled
+            if cache:
+                for entity_id, entity_data in new_data.items():
+                    cache_key = f"{self._user_id or '_'}:{endpoint}/{entity_id}"
+                    entity_cache = {entity_id: entity_data}
+                    self._cache.set(
+                        cache_key,
+                        zlib.compress(json.dumps(entity_cache).encode()),
+                        cache_ttl
+                    )
             
             result.update(new_data)
             
@@ -339,7 +347,8 @@ class QuipClient(object):
         
         Uses caching to optimize repeated requests for the same threads.
         """
-        return self._cached_get("2/threads", ids, None if not cache else cache_ttl, batch_size=self.MAX_THREADS_PER_REQUEST)
+        return self._cached_get("2/threads", ids, None if not cache else cache_ttl,
+                              batch_size=self.MAX_THREADS_PER_REQUEST, cache=cache)
 
     def get_recent_threads(self, max_updated_usec=None, count=None, **kwargs):
         """Returns the recently updated threads for a given user."""
