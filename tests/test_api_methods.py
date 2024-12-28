@@ -108,7 +108,7 @@ def test_get_folders(quip_client, mock_urlopen, mock_response):
     result = quip_client.get_folders(["folder1", "folder2"])
     assert len(result) == 2
     assert result["folder1"]["folder"]["title"] == "Mock Folder 1"
-    assert result["folder2"]["folder"]["title"] == "Test Folder 2"
+    assert result["folder2"]["folder"]["title"] == "Mock Folder 2"
 
 def test_get_threads(quip_client, mock_urlopen, mock_response):
     threads_data = {
@@ -156,4 +156,4 @@ def test_get_threads(quip_client, mock_urlopen, mock_response):
     result = quip_client.get_threads(["thread1", "thread2"])
     assert len(result) == 2
     assert result["thread1"]["thread"]["title"] == "Mock Thread 1"
-    assert result["thread2"]["thread"]["title"] == "Test Thread 2"
+    assert result["thread2"]["thread"]["title"] == "Mock Thread 2"
