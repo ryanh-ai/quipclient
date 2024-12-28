@@ -54,13 +54,25 @@ def test_get_thread_variations(quip_client, mock_urlopen, mock_response, test_na
 
 @pytest.mark.parametrize("test_name,test_data", BLOB_TEST_CASES)
 def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
+    # Setup mock response with headers and content
     mock_resp = Mock()
     mock_resp.read = lambda: test_data["content"]
+    mock_resp.headers = test_data["expected_headers"]
     mock_urlopen.return_value = mock_resp
     
-    result = quip_client.get_blob(test_data["response"]["thread_id"], test_data["response"]["hash"])
+    # Call get_blob with thread_id and blob_id
+    result = quip_client.get_blob(test_data["thread_id"], test_data["blob_id"])
+    
+    # Verify the response content and headers
     assert result.read() == test_data["content"]
+    assert result.headers["Content-Type"] == test_data["content_type"]
+    assert int(result.headers["Content-Length"]) == len(test_data["content"])
+    
+    # Verify the correct URL was called
     mock_urlopen.assert_called_once()
+    called_url = mock_urlopen.call_args[0][0].get_full_url()
+    expected_url = f"{quip_client.base_url}/1/blob/{test_data['thread_id']}/{test_data['blob_id']}"
+    assert called_url == expected_url
 
 @pytest.mark.parametrize("test_name,test_data", [
     ("simple_folders", SIMPLE_FOLDERS),

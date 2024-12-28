@@ -1,31 +1,29 @@
 """Test data for blob-related API responses"""
 
-# Simple text blob
-SIMPLE_BLOB = {
-    "content": b"Simple text content",
-    "response": {
-        "id": "BLOB123",
-        "name": "simple.txt",
-        "hash": "abc123",
-        "thread_id": "THREAD1"
-    }
-}
+"""Test data for blob-related API responses"""
 
-# Binary blob
-BINARY_BLOB = {
-    "content": b"\x89PNG\r\n\x1a\n",
-    "response": {
-        "id": "BLOB456",
-        "name": "test.png",
-        "hash": "def456",
-        "thread_id": "THREAD1"
-    }
-}
-
-# Test cases mapping
+# Test cases with binary content and metadata
 BLOB_TEST_CASES = [
-    ("simple_blob", SIMPLE_BLOB),
-    ("binary_blob", BINARY_BLOB)
+    ("text_blob", {
+        "thread_id": "THREAD1",
+        "blob_id": "abc123",
+        "content": b"Simple text content",
+        "content_type": "text/plain",
+        "expected_headers": {
+            "Content-Type": "text/plain",
+            "Content-Length": "18"
+        }
+    }),
+    ("image_blob", {
+        "thread_id": "THREAD2", 
+        "blob_id": "def456",
+        "content": b"\x89PNG\r\n\x1a\n",
+        "content_type": "image/png",
+        "expected_headers": {
+            "Content-Type": "image/png",
+            "Content-Length": "8"
+        }
+    })
 ]
 
 
