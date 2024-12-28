@@ -343,8 +343,21 @@ class QuipClient(object):
         Returns:
             Combined results from all pages of HTML content.
         """
-        return self._fetch_json(f"2/threads/{thread_id_or_path}/html",
-                              paginate=True, cache=False)
+        result = {"html": "", "response_metadata": {"next_cursor": ""}}
+        cursor = None
+        
+        while True:
+            page = self._fetch_json(f"2/threads/{thread_id_or_path}/html",
+                                  cursor=cursor, cache=False)
+            
+            if "html" in page:
+                result["html"] += page["html"]
+            
+            cursor = page.get("response_metadata", {}).get("next_cursor")
+            if not cursor:
+                break
+                
+        return result
 
     def _cached_get(self, endpoint, ids, cache_ttl=THIRTY_DAYS, batch_size=100, cache=True):
         """Helper method to handle cached bulk entity fetching.
