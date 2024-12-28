@@ -28,7 +28,7 @@ def test_get_thread_html_v2_basic_caching(quip_client, mock_urlopen, mock_respon
     mock_urlopen.reset_mock()
     
     # Second call should use cache
-    result2 = quip_client.get_thread_html_v2("TEST123", cache=True)
+    result2 = quip_client.get_thread_html_v2("TEST123")
     assert mock_urlopen.call_count == 0  # No API calls
     assert result2["html"] == "<h1>Page 1</h1><p>Page 2</p>"
 
@@ -40,7 +40,7 @@ def test_get_thread_html_v2_cache_expiration(quip_client, mock_urlopen, mock_res
     })
     
     # First call with 1 second TTL
-    result1 = quip_client.get_thread_html_v2("TEST123", cache=True, cache_ttl=1)
+    result1 = quip_client.get_thread_html_v2("TEST123", cache_ttl=1)
     assert mock_urlopen.call_count == 1
     
     # Second call immediately should use cache
@@ -52,7 +52,7 @@ def test_get_thread_html_v2_cache_expiration(quip_client, mock_urlopen, mock_res
     time.sleep(1.1)
     
     # Third call should hit API again
-    result3 = quip_client.get_thread_html_v2("TEST123", cache=True)
+    result3 = quip_client.get_thread_html_v2("TEST123")
     assert mock_urlopen.call_count == 1
 
 def test_get_thread_html_v2_compression(quip_client, mock_urlopen, mock_response):
