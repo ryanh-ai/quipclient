@@ -39,7 +39,7 @@ THREADS_BATCH = {
     "THREAD2": {"thread": {"id": "THREAD2", "title": "Thread 2"}}
 }
 
-# Batch test cases
+# Test cases mapping for batch operations
 BATCH_TEST_CASES = [
     ("folders_batch", FOLDERS_BATCH),
     ("threads_batch", THREADS_BATCH)
