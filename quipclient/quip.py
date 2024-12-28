@@ -131,6 +131,14 @@ class QuipClient(object):
 
     def __init__(self, access_token=None, client_id=None, client_secret=None,
                  base_url=None, request_timeout=None, cache_dir=None):
+        """Constructs a Quip API client.
+        If `access_token` is given, all of the API methods in the client
+        will work to read and modify Quip documents.
+
+        Otherwise, only `get_authorization_url` and `get_access_token`
+        work, and we assume the client is for a server using the Quip API's
+        OAuth endpoint.
+        """
         # Rate limit tracking
         self._rate_limit = None  # Requests per minute limit
         self._rate_limit_remaining = None  # Remaining requests this minute
@@ -139,15 +147,7 @@ class QuipClient(object):
         self._company_rate_limit_remaining = None  # Remaining company requests
         self._company_rate_limit_reset = None  # UTC timestamp for company reset
         self._company_retry_after = None  # Seconds until next allowed request
-        """Constructs a Quip API client.
 
-        If `access_token` is given, all of the API methods in the client
-        will work to read and modify Quip documents.
-
-        Otherwise, only `get_authorization_url` and `get_access_token`
-        work, and we assume the client is for a server using the Quip API's
-        OAuth endpoint.
-        """
         self.access_token = access_token
         self.client_id = client_id
         self.client_secret = client_secret
@@ -158,6 +158,7 @@ class QuipClient(object):
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
         self._cache = Cache(cache_dir)
+        self._cache.stats(enable=True)
         self._user_id = None
         if self.access_token:
             try:
