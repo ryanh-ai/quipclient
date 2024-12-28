@@ -32,10 +32,13 @@ given document, which is useful for automating a task list.
 import datetime
 import json
 import logging
+import os
 import ssl
 import sys
 import time
 import xml.etree.cElementTree
+from diskcache import Cache
+import zlib
 
 PY3 = sys.version_info > (3,)
 
@@ -105,6 +108,11 @@ class QuipError(Exception):
 
 class QuipClient(object):
     """A Quip API client"""
+    # Cache TTL constants (in seconds)
+    ONE_HOUR = 3600
+    ONE_DAY = 86400
+    THIRTY_DAYS = 2592000
+
     # Edit operations
     APPEND, \
         PREPEND, \
@@ -121,7 +129,7 @@ class QuipClient(object):
         BLUE = range(5)
 
     def __init__(self, access_token=None, client_id=None, client_secret=None,
-                 base_url=None, request_timeout=None):
+                 base_url=None, request_timeout=None, cache_dir=None):
         """Constructs a Quip API client.
 
         If `access_token` is given, all of the API methods in the client
@@ -136,6 +144,17 @@ class QuipClient(object):
         self.client_secret = client_secret
         self.base_url = base_url if base_url else "https://platform.quip.com"
         self.request_timeout = request_timeout if request_timeout else 10
+        if cache_dir is None:
+            cache_dir = os.path.join(os.getcwd(), '.cache')
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+        self._cache = Cache(cache_dir)
+        self._user_id = None
+        if self.access_token:
+            try:
+                self._user_id = self.get_authenticated_user()["id"]
+            except:
+                pass
 
     def get_authorization_url(self, redirect_uri, state=None):
         """Returns the URL the user should be redirected to to sign in."""
@@ -157,13 +176,13 @@ class QuipClient(object):
             grant_type=grant_type, refresh_token=refresh_token,
             client_id=self.client_id, client_secret=self.client_secret)
 
-    def get_authenticated_user(self):
+    def get_authenticated_user(self, cache_ttl=ONE_HOUR):
         """Returns the user corresponding to our access token."""
-        return self._fetch_json("users/current")
+        return self._fetch_json("users/current", cache=True, cache_ttl=cache_ttl)
 
-    def get_user(self, id):
+    def get_user(self, id, cache_ttl=ONE_HOUR):
         """Returns the user with the given ID."""
-        return self._fetch_json("users/" + id)
+        return self._fetch_json("users/" + id, cache=True, cache_ttl=cache_ttl)
 
     def get_users(self, ids):
         """Returns a dictionary of users for the given IDs."""
@@ -179,9 +198,9 @@ class QuipClient(object):
         """Returns a list of the users in the authenticated user's contacts."""
         return self._fetch_json("users/contacts")
 
-    def get_folder(self, id):
+    def get_folder(self, id, cache_ttl=THIRTY_DAYS):
         """Returns the folder with the given ID."""
-        return self._fetch_json("folders/" + id)
+        return self._fetch_json("folders/" + id, cache=True, cache_ttl=cache_ttl)
 
     def get_folders(self, ids):
         """Returns a dictionary of folders for the given IDs."""
@@ -231,7 +250,7 @@ class QuipClient(object):
         """
         return self._fetch_json(
             "messages/" + thread_id, max_created_usec=max_created_usec,
-            count=count)
+            count=count, cache=False)
 
     def new_message(self, thread_id, content=None, **kwargs):
         """Sends a message on the given thread.
@@ -243,7 +262,7 @@ class QuipClient(object):
             "content": content,
         }
         args.update(kwargs)
-        return self._fetch_json("messages/new", post_data=args)
+        return self._fetch_json("messages/new", post_data=args, cache=False)
 
     def get_thread(self, id):
         """Returns the thread with the given ID."""
@@ -257,7 +276,7 @@ class QuipClient(object):
         """Returns the recently updated threads for a given user."""
         return self._fetch_json(
             "threads/recent", max_updated_usec=max_updated_usec,
-            count=count, **kwargs)
+            count=count, cache=False, **kwargs)
 
     def get_matching_threads(
             self, query, count=None, only_match_titles=False, **kwargs):
@@ -270,7 +289,7 @@ class QuipClient(object):
         return self._fetch_json("threads/add-members", post_data={
             "thread_id": thread_id,
             "member_ids": ",".join(member_ids),
-        })
+        }, cache=False)
 
     def delete_thread(self, thread_id):
         """Deletes the thread with the given thread id or secret"""
@@ -283,7 +302,7 @@ class QuipClient(object):
         return self._fetch_json("threads/remove-members", post_data={
             "thread_id": thread_id,
             "member_ids": ",".join(member_ids),
-        })
+        }, cache=False)
 
     def move_thread(self, thread_id, source_folder_id, destination_folder_id):
         """Moves the given thread from the source folder to the destination one.
@@ -298,7 +317,7 @@ class QuipClient(object):
             "message": message,
             "title": title,
             "member_ids": ",".join(member_ids),
-        })
+        }, cache=False)
 
     def new_document(self, content, format="html", title=None, member_ids=[]):
         """Creates a new document from the given content.
@@ -316,7 +335,7 @@ class QuipClient(object):
             "format": format,
             "title": title,
             "member_ids": ",".join(member_ids),
-        })
+        }, cache=False)
 
     def copy_document(self, thread_id, folder_ids=None, member_ids=None,
             title=None, values=None, **kwargs):
@@ -336,7 +355,7 @@ class QuipClient(object):
         if values:
             args["values"] = json.dumps(values)
         args.update(kwargs)
-        return self._fetch_json("threads/copy-document", post_data=args)
+        return self._fetch_json("threads/copy-document", post_data=args, cache=False)
 
     def merge_comments(self, original_id, children_ids, ignore_user_ids=[]):
         """Given an original document and a set of exact duplicates, copies
@@ -413,7 +432,7 @@ class QuipClient(object):
             "section_id": section_id
         }
         args.update(kwargs)
-        return self._fetch_json("threads/edit-document", post_data=args)
+        return self._fetch_json("threads/edit-document", post_data=args, cache=False)
 
     def add_to_first_list(self, thread_id, *items, **kwargs):
         """Adds the given items to the first list in the given document.
@@ -780,10 +799,20 @@ class QuipClient(object):
     def new_websocket(self, **kwargs):
         """Gets a websocket URL to connect to.
         """
-        return self._fetch_json("websockets/new", **kwargs)
+        return self._fetch_json("websockets/new", cache=False, **kwargs)
 
-    def _fetch_json(self, path, post_data=None, **args):
-        request = Request(url=self._url(path, **args))
+    def _fetch_json(self, path, post_data=None, cache=True, cache_ttl=None, **args):
+        url = self._url(path, **args)
+
+        # Check cache if enabled and this is a GET request
+        if cache and not post_data and cache_ttl:
+            cache_key = f"{self._user_id or "_"}:{url}"
+            cached_data, expiry_time = self._cache.get(cache_key, expire_time=True)
+            if cached_data:  # Check if we have actual data
+                return json.loads(zlib.decompress(cached_data).decode())
+
+        # TODO: add support for post data as part of cache_key
+        request = Request(url=url)
         if post_data:
             post_data = dict((k, v) for k, v in post_data.items()
                              if v or isinstance(v, int))
@@ -796,9 +825,15 @@ class QuipClient(object):
         if self.access_token:
             request.add_header("Authorization", "Bearer " + self.access_token)
         try:
-            return json.loads(
-                urlopen(
-                    request, timeout=self.request_timeout).read().decode())
+            response_data = urlopen(request, timeout=self.request_timeout).read().decode()
+            result = json.loads(response_data)
+            
+            # Cache successful GET responses if caching is enabled
+            if cache and not post_data:
+                cache_key = f"{self.access_token}:{url}"
+                self._cache.set(cache_key, zlib.compress(response_data.encode()), cache_ttl)
+                
+            return result
         except HTTPError as error:
             try:
                 # Extract the developer-friendly error message from the response
