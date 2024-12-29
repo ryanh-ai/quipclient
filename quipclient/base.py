@@ -51,6 +51,11 @@ class BaseQuipClient:
     ONE_DAY = 86400
     THIRTY_DAYS = 2592000
 
+    # Maximum entities per API request
+    MAX_USERS_PER_REQUEST = 100
+    MAX_FOLDERS_PER_REQUEST = 100  
+    MAX_THREADS_PER_REQUEST = 10
+
     def __init__(self, access_token=None, client_id=None, client_secret=None,
                  base_url=None, request_timeout=None, cache_dir=None):
         """Initialize the base client.
@@ -351,3 +356,27 @@ class BaseQuipClient:
     def parse_micros(self, usec):
         """Returns a `datetime` for the given microsecond string"""
         return datetime.datetime.utcfromtimestamp(usec / 1000000.0)
+
+    def get_authorization_url(self, redirect_uri, state=None):
+        """Returns the URL the user should be redirected to to sign in."""
+        return self._url(
+            "oauth/login", redirect_uri=redirect_uri, state=state,
+            response_type="code", client_id=self.client_id)
+
+    def get_access_token(self, redirect_uri, code,
+                         grant_type="authorization_code",
+                         refresh_token=None):
+        """Exchanges a verification code for an access_token.
+
+        Once the user is redirected back to your server from the URL
+        returned by `get_authorization_url`, you can exchange the `code`
+        argument with this method.
+        """
+        return self._fetch_json(
+            "oauth/access_token", redirect_uri=redirect_uri, code=code,
+            grant_type=grant_type, refresh_token=refresh_token,
+            client_id=self.client_id, client_secret=self.client_secret)
+
+    def get_authenticated_user(self, cache=True, cache_ttl=ONE_HOUR):
+        """Returns the user corresponding to our access token."""
+        return self._fetch_json("users/current", cache=cache, cache_ttl=cache_ttl)

@@ -23,16 +23,6 @@ except AttributeError:
 
 class QuipClient(BaseQuipClient):
     """A Quip API client"""
-    # Cache TTL constants (in seconds)
-    ONE_HOUR = 3600
-    ONE_DAY = 86400
-    THIRTY_DAYS = 2592000
-
-    # Maximum entities per API request
-    MAX_USERS_PER_REQUEST = 100
-    MAX_FOLDERS_PER_REQUEST = 100  
-    MAX_THREADS_PER_REQUEST = 10
-
     # Edit operations
     APPEND, \
         PREPEND, \
@@ -58,56 +48,15 @@ class QuipClient(BaseQuipClient):
         work, and we assume the client is for a server using the Quip API's
         OAuth endpoint.
         """
-        # Rate limit tracking
-        self._rate_limit = None  # Requests per minute limit
-        self._rate_limit_remaining = None  # Remaining requests this minute
-        self._rate_limit_reset = None  # UTC timestamp when limit resets
-        self._company_rate_limit = None  # Company requests per minute
-        self._company_rate_limit_remaining = None  # Remaining company requests
-        self._company_rate_limit_reset = None  # UTC timestamp for company reset
-        self._company_retry_after = None  # Seconds until next allowed request
-
-        self.access_token = access_token
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.base_url = base_url if base_url else "https://platform.quip.com"
-        self.request_timeout = request_timeout if request_timeout else 10
-        if cache_dir is None:
-            cache_dir = os.path.join(os.getcwd(), '.cache')
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
-        self._cache = Cache(cache_dir)
-        self._cache.stats(enable=True)
-        self._user_id = None
+        super().__init__(access_token, client_id, client_secret, 
+                        base_url, request_timeout, cache_dir)
+        
         if self.access_token:
             try:
                 self._user_id = self.get_authenticated_user()["id"]
             except:
                 pass
 
-    def get_authorization_url(self, redirect_uri, state=None):
-        """Returns the URL the user should be redirected to to sign in."""
-        return self._url(
-            "oauth/login", redirect_uri=redirect_uri, state=state,
-            response_type="code", client_id=self.client_id)
-
-    def get_access_token(self, redirect_uri, code,
-                         grant_type="authorization_code",
-                         refresh_token=None):
-        """Exchanges a verification code for an access_token.
-
-        Once the user is redirected back to your server from the URL
-        returned by `get_authorization_url`, you can exchange the `code`
-        argument with this method.
-        """
-        return self._fetch_json(
-            "oauth/access_token", redirect_uri=redirect_uri, code=code,
-            grant_type=grant_type, refresh_token=refresh_token,
-            client_id=self.client_id, client_secret=self.client_secret)
-
-    def get_authenticated_user(self, cache=True, cache_ttl=ONE_HOUR):
-        """Returns the user corresponding to our access token."""
-        return self._fetch_json("users/current", cache=cache, cache_ttl=cache_ttl)
 
     def get_user(self, id, cache=True, cache_ttl=ONE_HOUR):
         """Returns the user with the given ID."""
