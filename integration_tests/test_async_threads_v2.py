@@ -5,7 +5,7 @@ import pytest_asyncio
 from quipclient.async_client import UserQuipClientAsync
 
 
-@pytest_asyncio.fixture(scope="session", name="async_quip_client")
+@pytest_asyncio.fixture(scope="function", name="async_quip_client")
 async def async_quip_client():
     """Create async Quip client instance using API key from environment"""
     api_key = os.getenv("QUIP_API_KEY")
