@@ -111,3 +111,46 @@ async def test_rate_limit_tracking(mock_quip_client):
     assert mock_quip_client._company_rate_limit == 600
     assert mock_quip_client._company_rate_limit_remaining == 599
     assert mock_quip_client._company_rate_limit_reset == 1609459200
+
+@pytest.mark.asyncio
+async def test_concurrent_requests(mock_aiohttp_app):
+    """Test handling multiple concurrent requests"""
+    client = UserQuipClientAsync(
+        "test_token",
+        base_url=f"http://{mock_aiohttp_app.host}:{mock_aiohttp_app.port}",
+        max_concurrent_requests=2
+    )
+    
+    async with client:
+        # Make multiple concurrent requests
+        tasks = [
+            client._fetch_json("users/current")
+            for _ in range(3)
+        ]
+        results = await asyncio.gather(*tasks)
+        
+        assert len(results) == 3
+        for result in results:
+            assert result["id"] == "TEST_USER_ID"
+
+@pytest.mark.asyncio
+async def test_error_response_handling(mock_aiohttp_app):
+    """Test handling of error responses"""
+    async def mock_error_endpoint(request):
+        return web.Response(
+            status=429,
+            body='{"error_code": 429, "error_description": "Too Many Requests"}'
+        )
+    
+    mock_aiohttp_app.app.router.add_get("/1/error", mock_error_endpoint)
+    
+    client = UserQuipClientAsync(
+        "test_token",
+        base_url=f"http://{mock_aiohttp_app.host}:{mock_aiohttp_app.port}"
+    )
+    
+    async with client:
+        with pytest.raises(QuipError) as exc_info:
+            await client._fetch_json("error")
+        assert exc_info.value.code == 429
+        assert "Too Many Requests" in str(exc_info.value)

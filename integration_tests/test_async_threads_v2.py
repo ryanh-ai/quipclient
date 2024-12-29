@@ -90,3 +90,58 @@ async def test_get_thread_html_v2_pagination(async_quip_client):
     
     # Verify response
     assert len(complete_html) > 0
+
+@pytest.mark.asyncio
+async def test_concurrent_thread_fetching(async_quip_client):
+    """Test fetching multiple threads concurrently"""
+    # Get authenticated user to get shared folders
+    user = await async_quip_client._fetch_json("users/current")
+    shared_folder_ids = user.get("shared_folder_ids", [])
+    
+    if not shared_folder_ids:
+        pytest.skip("No shared folders available")
+    
+    # Get threads from first folder
+    folder = await async_quip_client._fetch_json(f"folders/{shared_folder_ids[0]}")
+    thread_ids = [
+        child["thread_id"] 
+        for child in folder.get("children", [])
+        if "thread_id" in child
+    ][:5]  # Limit to first 5 threads
+    
+    if not thread_ids:
+        pytest.skip("No threads in first shared folder")
+    
+    # Fetch multiple threads concurrently
+    tasks = [
+        async_quip_client._fetch_json(
+            f"2/threads/",
+            params={"ids": thread_id}
+        )
+        for thread_id in thread_ids
+    ]
+    
+    results = await asyncio.gather(*tasks)
+    
+    # Verify all threads were fetched successfully
+    assert len(results) == len(thread_ids)
+    for result in results:
+        assert len(result) > 0
+        thread = next(iter(result.values()))["thread"]
+        assert "id" in thread
+        assert "title" in thread
+
+@pytest.mark.asyncio
+async def test_rate_limit_handling(async_quip_client):
+    """Test rate limit information is properly tracked during integration tests"""
+    # Make a series of requests to observe rate limiting
+    for _ in range(3):
+        await async_quip_client._fetch_json("users/current")
+        
+        # Verify rate limit headers are being tracked
+        assert async_quip_client._rate_limit > 0
+        assert async_quip_client._rate_limit_remaining >= 0
+        assert async_quip_client._rate_limit_reset > 0
+        assert async_quip_client._company_rate_limit > 0
+        assert async_quip_client._company_rate_limit_remaining >= 0
+        assert async_quip_client._company_rate_limit_reset > 0
