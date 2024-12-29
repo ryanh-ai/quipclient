@@ -49,7 +49,7 @@ async def test_client_initialization():
 @pytest.mark.asyncio
 async def test_context_manager(mock_aiohttp_app):
     """Test async context manager"""
-    server = await mock_aiohttp_app
+    server = mock_aiohttp_app
     client = UserQuipClientAsync(
         "test_token",
         base_url=f"http://{server.host}:{server.port}"
