@@ -1,22 +1,32 @@
 import os
 import pytest
+import asyncio
 import pytest_asyncio
 from quipclient.async_client import UserQuipClientAsync
 
+@pytest.fixture
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
 @pytest_asyncio.fixture(scope="session")
-async def async_quip_client():
+async def async_quip_client(event_loop):
     """Create async Quip client instance using API key from environment"""
     api_key = os.getenv("QUIP_API_KEY")
     base_url = os.getenv("QUIP_API_BASE_URL", "https://platform.quip.com")
     
     if not api_key:
         pytest.skip("QUIP_API_KEY environment variable not set")
-        
-    async with UserQuipClientAsync(
+    
+    client = UserQuipClientAsync(
         access_token=api_key,
         base_url=base_url
-    ) as client:
-        yield client
+    )
+    await client.start()
+    yield client
+    await client.close()
 
 @pytest.mark.asyncio
 async def test_get_threads_v2_from_shared_folders(async_quip_client):

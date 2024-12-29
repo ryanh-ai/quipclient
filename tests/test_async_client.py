@@ -38,6 +38,13 @@ async def mock_quip_client(mock_aiohttp_app):
     yield client
     await client.close()
 
+@pytest.fixture
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
 @pytest.mark.asyncio
 async def test_client_initialization():
     """Test basic client initialization"""
@@ -45,6 +52,34 @@ async def test_client_initialization():
     assert client.access_token == "test_token"
     assert client.base_url == "https://platform.quip.com"
     assert client._session is None
+
+@pytest.mark.asyncio 
+async def test_fetch_json_timeout_handling(mock_aiohttp_app):
+    """Test that timeouts are properly handled in _fetch_json"""
+    client = UserQuipClientAsync(
+        "test_token",
+        base_url=f"http://{mock_aiohttp_app.host}:{mock_aiohttp_app.port}",
+        request_timeout=0.1  # Very short timeout
+    )
+    
+    async with client:
+        with pytest.raises(QuipError) as exc_info:
+            await client._fetch_json("slow_endpoint")
+        assert exc_info.value.code == 408
+        assert "Request timeout" in str(exc_info.value)
+
+@pytest.mark.asyncio
+async def test_fetch_json_task_context(mock_aiohttp_app):
+    """Test that _fetch_json works properly within task context"""
+    client = UserQuipClientAsync(
+        "test_token",
+        base_url=f"http://{mock_aiohttp_app.host}:{mock_aiohttp_app.port}"
+    )
+    
+    async with client:
+        # This should work because we're in a task context
+        result = await client._fetch_json("users/current")
+        assert result["id"] == "TEST_USER_ID"
 
 @pytest.mark.asyncio
 async def test_context_manager(mock_aiohttp_app):
