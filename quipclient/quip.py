@@ -172,8 +172,7 @@ class QuipClient(BaseQuipClient):
         return self._cached_get("2/threads", ids, None if not cache else cache_ttl,
                               batch_size=self.MAX_THREADS_PER_REQUEST, cache=cache)
 
-    #AI, add cache option default to True with 30 day TTL
-    def get_thread_folders_v2(self, thread_id_or_path, timeout=30, cursor=None):
+    def get_thread_folders_v2(self, thread_id_or_path, timeout=30, cursor=None, cache=True, cache_ttl=BaseQuipClient.THIRTY_DAYS):
         """Returns list of folders containing the thread using v2 API.
         
         Args:
@@ -202,8 +201,7 @@ class QuipClient(BaseQuipClient):
                 raise
             raise TimeoutError(f"Request timed out after {timeout} seconds") from e
 
-    #AI, add 10 day TTL
-    def get_thread_html_v2(self, thread_id_or_path, cache=True, cache_ttl=None):
+    def get_thread_html_v2(self, thread_id_or_path, cache=True, cache_ttl=BaseQuipClient.ONE_DAY * 10):
         """Returns complete thread HTML content using v2 API.
         
         Args:
@@ -730,4 +728,3 @@ class QuipClient(BaseQuipClient):
         document_xml = "<html>" + document_html + "</html>"
         return xml.etree.cElementTree.fromstring(document_xml.encode("utf-8"))
 
-#AI! please addresses the issues I highlighted
