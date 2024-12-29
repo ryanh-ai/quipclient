@@ -16,7 +16,7 @@ def sample_thread_v2():
     return {
         'thread': {
             'author_id': 'USER123',
-            'created_usec': 1672574400000000,  # 2023-01-01 12:00:00 UTC
+            'created_usec': 1672603200000000,  # 2023-01-01 12:00:00 UTC
             'id': 'THREAD123',
             'is_template': False,
             'link': 'https://quip.com/abc123',
@@ -38,7 +38,7 @@ def sample_folder():
             'id': 'FOLDER123',
             'title': 'Test Folder',
             'folder_type': 'shared',
-            'created_usec': 1672574400000000,  # 2023-01-01 12:00:00 UTC
+            'created_usec': 1672603200000000,  # 2023-01-01 12:00:00 UTC
             'updated_usec': 1704110400000000,  # 2024-01-01 12:00:00 UTC
             'creator_id': 'USER123',
             'color': 'blue',
