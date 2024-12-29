@@ -9,6 +9,7 @@ import time
 def pytest_configure(config):
     """Configure pytest-asyncio default fixture loop scope"""
     config.option.asyncio_mode = "strict"
+    config.option.asyncio_default_fixture_loop_scope = "function"
 
 @pytest.fixture
 def mock_response():
