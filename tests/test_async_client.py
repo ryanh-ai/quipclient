@@ -5,7 +5,7 @@ from aiohttp import web
 from unittest.mock import Mock
 from quipclient.async_client import UserQuipClientAsync
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 async def mock_aiohttp_app(aiohttp_server):
     """Create mock aiohttp application"""
     app = web.Application()
@@ -27,17 +27,15 @@ async def mock_aiohttp_app(aiohttp_server):
     server = await aiohttp_server(app)
     return server
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 async def mock_quip_client(mock_aiohttp_app):
     """Create mock Quip client with test server"""
     server = await mock_aiohttp_app
-    client = UserQuipClientAsync(
+    async with UserQuipClientAsync(
         "test_token",
         base_url=f"http://{server.host}:{server.port}"
-    )
-    await client.start()
-    yield client
-    await client.close()
+    ) as client:
+        yield client
 
 @pytest.mark.asyncio
 async def test_client_initialization():
@@ -56,13 +54,13 @@ async def test_context_manager(mock_aiohttp_app):
         base_url=f"http://{server.host}:{server.port}"
     )
     
-    async with client:
-        assert client._session is not None
+    async with client as c:
+        assert c._session is not None
         # Verify we can make a request
-        user = await client._fetch_json("users/current")
+        user = await c._fetch_json("users/current")
         assert user["id"] == "TEST_USER_ID"
     
-    assert client._session.closed
+    assert c._session is None
 
 @pytest.mark.asyncio
 async def test_rate_limit_tracking(mock_quip_client):
