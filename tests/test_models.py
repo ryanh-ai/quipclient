@@ -16,14 +16,14 @@ def sample_thread_v2():
     return {
         'thread': {
             'author_id': 'USER123',
-            'created_usec': 1704067200000000,  # 2024-01-01
+            'created_usec': 1672531200000000,  # 2023-01-01
             'id': 'THREAD123',
             'is_template': False,
             'link': 'https://quip.com/abc123',
             'owning_company_id': 'COMPANY123',
             'title': 'Test Document',
             'type': 'DOCUMENT',
-            'updated_usec': 1704153600000000,  # 2024-01-02
+            'updated_usec': 1704067200000000,  # 2024-01-01
             'sharing': {
                 'company_mode': 'VIEW'
             }
@@ -38,8 +38,8 @@ def sample_folder():
             'id': 'FOLDER123',
             'title': 'Test Folder',
             'folder_type': 'shared',
-            'created_usec': 1704067200000000,  # 2024-01-01
-            'updated_usec': 1704153600000000,  # 2024-01-02
+            'created_usec': 1672531200000000,  # 2023-01-01
+            'updated_usec': 1704067200000000,  # 2024-01-01
             'creator_id': 'USER123',
             'color': 'blue',
             'inherit_mode': 'inherit',
