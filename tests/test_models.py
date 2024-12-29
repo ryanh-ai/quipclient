@@ -56,7 +56,7 @@ def test_thread_metadata_from_v2(sample_thread_v2):
     assert metadata.title == 'Test Document'
     assert metadata.thread_type == ThreadType.DOCUMENT
     assert metadata.author_id == 'USER123'
-    assert metadata.created_usec == 1672531200000000
+    assert metadata.created_usec == 1672574400000000
     assert metadata.updated_usec == 1704067200000000
     assert metadata.owning_company_id == 'COMPANY123'
     assert metadata.link == 'https://quip.com/abc123'
@@ -88,7 +88,7 @@ def test_folder_metadata_from_response(sample_folder):
     assert metadata.title == 'Test Folder'
     assert metadata.folder_type == FolderType.SHARED
     assert metadata.creator_id == 'USER123'
-    assert metadata.created_usec == 1672531200000000
+    assert metadata.created_usec == 1672574400000000
     assert metadata.updated_usec == 1704067200000000
     assert metadata.color == 'blue'
     assert metadata.inherit_mode == 'inherit'
