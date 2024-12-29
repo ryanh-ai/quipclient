@@ -58,11 +58,11 @@ class QuipClient(BaseQuipClient):
                 pass
 
 
-    def get_user(self, id, cache=True, cache_ttl=ONE_HOUR):
+    def get_user(self, id, cache=True, cache_ttl=BaseQuipClient.ONE_HOUR):
         """Returns the user with the given ID."""
         return self._fetch_json("users/" + id, cache=cache, cache_ttl=cache_ttl)
 
-    def get_users(self, ids, cache=True, cache_ttl=THIRTY_DAYS):
+    def get_users(self, ids, cache=True, cache_ttl=BaseQuipClient.THIRTY_DAYS):
         """Returns a dictionary of users for the given IDs.
         
         Uses caching to optimize repeated requests for the same users.
@@ -80,11 +80,11 @@ class QuipClient(BaseQuipClient):
         """Returns a list of the users in the authenticated user's contacts."""
         return self._fetch_json("users/contacts")
 
-    def get_folder(self, id, cache=True, cache_ttl=THIRTY_DAYS):
+    def get_folder(self, id, cache=True, cache_ttl=BaseQuipClient.THIRTY_DAYS):
         """Returns the folder with the given ID."""
         return self._fetch_json("folders/" + id, cache=cache, cache_ttl=cache_ttl)
 
-    def get_folders(self, ids, cache=True, cache_ttl=THIRTY_DAYS):
+    def get_folders(self, ids, cache=True, cache_ttl=BaseQuipClient.THIRTY_DAYS):
         """Returns a dictionary of folders for the given IDs.
         
         Uses caching to optimize repeated requests for the same folders.
@@ -150,7 +150,7 @@ class QuipClient(BaseQuipClient):
         args.update(kwargs)
         return self._fetch_json("messages/new", post_data=args, cache=False)
 
-    def get_thread(self, id, cache=True, cache_ttl=THIRTY_DAYS):
+    def get_thread(self, id, cache=True, cache_ttl=BaseQuipClient.THIRTY_DAYS):
         """Returns the thread with the given ID using v1 API."""
         return self._fetch_json("threads/" + id, cache=cache, cache_ttl=cache_ttl)
 
@@ -252,7 +252,7 @@ class QuipClient(BaseQuipClient):
         return result
 
 
-    def get_threads(self, ids, cache=True, cache_ttl=THIRTY_DAYS):
+    def get_threads(self, ids, cache=True, cache_ttl=BaseQuipClient.THIRTY_DAYS):
         """Returns a dictionary of threads for the given IDs.
         
         Uses caching to optimize repeated requests for the same threads.
