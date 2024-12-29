@@ -1,11 +1,12 @@
 """Tests for async Quip client"""
 
 import pytest
+import pytest_asyncio
 from aiohttp import web
 from unittest.mock import Mock
 from quipclient.async_client import UserQuipClientAsync
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def mock_aiohttp_app(aiohttp_server):
     """Create mock aiohttp application"""
     app = web.Application()
@@ -31,11 +32,13 @@ async def mock_aiohttp_app(aiohttp_server):
 async def mock_quip_client(mock_aiohttp_app):
     """Create mock Quip client with test server"""
     server = await mock_aiohttp_app
-    async with UserQuipClientAsync(
+    client = UserQuipClientAsync(
         "test_token",
         base_url=f"http://{server.host}:{server.port}"
-    ) as client:
-        yield client
+    )
+    await client.start()
+    yield client
+    await client.close()
 
 @pytest.mark.asyncio
 async def test_client_initialization():
