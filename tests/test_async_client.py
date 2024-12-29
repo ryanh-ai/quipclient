@@ -30,9 +30,10 @@ async def mock_aiohttp_app(aiohttp_server):
 @pytest.fixture
 async def mock_quip_client(mock_aiohttp_app):
     """Create mock Quip client with test server"""
+    server = await mock_aiohttp_app
     client = UserQuipClientAsync(
         "test_token",
-        base_url=f"http://{mock_aiohttp_app.host}:{mock_aiohttp_app.port}"
+        base_url=f"http://{server.host}:{server.port}"
     )
     await client.start()
     yield client
@@ -49,9 +50,10 @@ async def test_client_initialization():
 @pytest.mark.asyncio
 async def test_context_manager(mock_aiohttp_app):
     """Test async context manager"""
+    server = await mock_aiohttp_app
     client = UserQuipClientAsync(
         "test_token",
-        base_url=f"http://{mock_aiohttp_app.host}:{mock_aiohttp_app.port}"
+        base_url=f"http://{server.host}:{server.port}"
     )
     
     async with client:
