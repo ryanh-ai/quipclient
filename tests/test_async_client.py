@@ -40,14 +40,8 @@ async def mock_quip_client(mock_aiohttp_app):
     yield client
     await client.close()
 
-@pytest.fixture(scope="function")
-def event_loop():
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="function")
 async def test_client_initialization():
     """Test basic client initialization"""
     client = UserQuipClientAsync("test_token")

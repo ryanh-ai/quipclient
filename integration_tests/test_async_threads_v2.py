@@ -4,12 +4,6 @@ import asyncio
 import pytest_asyncio
 from quipclient.async_client import UserQuipClientAsync
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 @pytest_asyncio.fixture(scope="session")
 async def async_quip_client(event_loop):
@@ -28,7 +22,7 @@ async def async_quip_client(event_loop):
     yield client
     await client.close()
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 async def test_get_threads_v2_from_shared_folders(async_quip_client):
     """Test getting thread information from shared folders using async client"""
     # Get authenticated user to get shared folders
