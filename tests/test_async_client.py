@@ -27,6 +27,12 @@ async def mock_aiohttp_app(aiohttp_server):
         )
     
     app.router.add_get("/1/users/current", mock_current_user)
+    
+    async def mock_slow_endpoint(request):
+        await asyncio.sleep(0.2)  # Longer than timeout
+        return web.Response(text="Timeout response")
+        
+    app.router.add_get("/1/slow_endpoint", mock_slow_endpoint)
     return await aiohttp_server(app)
 
 @pytest_asyncio.fixture(scope="function")
@@ -41,7 +47,7 @@ async def mock_quip_client(mock_aiohttp_app):
     await client.close()
 
 
-@pytest.mark.asyncio(scope="function")
+@pytest.mark.asyncio(loop_scope="function")
 async def test_client_initialization():
     """Test basic client initialization"""
     client = UserQuipClientAsync("test_token")
@@ -130,6 +136,7 @@ async def test_concurrent_requests(mock_aiohttp_app):
 @pytest.mark.asyncio
 async def test_error_response_handling(mock_aiohttp_app):
     """Test handling of error responses"""
+    # Add route before server starts
     async def mock_error_endpoint(request):
         return web.Response(
             status=429,
@@ -137,6 +144,7 @@ async def test_error_response_handling(mock_aiohttp_app):
         )
     
     mock_aiohttp_app.app.router.add_get("/1/error", mock_error_endpoint)
+    await mock_aiohttp_app.start()
     
     client = UserQuipClientAsync(
         "test_token",
