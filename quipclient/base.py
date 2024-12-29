@@ -288,3 +288,66 @@ class BaseQuipClient:
     def _urlopen(self, request):
         """Internal method to fetch data using the configured urlopen"""
         return urlopen(request, timeout=self.request_timeout)
+
+    def get_blob(self, thread_id, blob_id):
+        """Returns a file-like object with the contents of the given blob from
+        the given thread.
+
+        The object is described in detail here:
+        https://docs.python.org/2/library/urllib2.html#urllib2.urlopen
+        """
+        request = Request(
+            url=self._url("blob/%s/%s" % (thread_id, blob_id)))
+        if self.access_token:
+            request.add_header("Authorization", "Bearer " + self.access_token)
+        try:
+            return self._urlopen(request)
+        except HTTPError as error:
+            try:
+                error_data = error.read().decode()
+                error_json = json.loads(error_data)
+                message = error_json["error_description"]
+                
+                # Cache 403 errors if caching is enabled
+                request_url = request.get_full_url()
+                if self._cache and error.code == 403:
+                    cache_key = f"{self._user_id or '_'}:{request_url}"
+                    self._cache.set(
+                        cache_key,
+                        zlib.compress(error_data.encode()),
+                        self.ONE_HOUR
+                    )
+            except Exception:
+                raise error
+            raise QuipError(error.code, message, error)
+
+    def put_blob(self, thread_id, blob, name=None):
+        """Uploads an image or other blob to the given Quip thread. Returns an
+        ID that can be used to add the image to the document of the thread.
+
+        blob can be any file-like object. Requires the 'requests' module.
+        """
+        import requests
+        url = "blob/" + thread_id
+        headers = None
+        if self.access_token:
+            headers = {"Authorization": "Bearer " + self.access_token}
+        if name:
+            blob = (name, blob)
+        try:
+            response = requests.request(
+                "post", self._url(url), timeout=self.request_timeout,
+                files={"blob": blob}, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as error:
+            try:
+                # Extract the developer-friendly error message from the response
+                message = error.response.json()["error_description"]
+            except Exception:
+                raise error
+            raise QuipError(error.response.status_code, message, error)
+
+    def parse_micros(self, usec):
+        """Returns a `datetime` for the given microsecond string"""
+        return datetime.datetime.utcfromtimestamp(usec / 1000000.0)
