@@ -6,6 +6,13 @@ from quipclient.quip import QuipClient
 from urllib.error import HTTPError
 import time
 
+def pytest_configure(config):
+    """Configure pytest-asyncio default fixture loop scope"""
+    config.addinivalue_line(
+        "asyncio_default_fixture_loop_scope",
+        "function"
+    )
+
 @pytest.fixture
 def mock_response():
     """Returns a configurable mock HTTP response"""
