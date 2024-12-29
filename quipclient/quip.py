@@ -732,9 +732,4 @@ class QuipClient(BaseQuipClient):
         document_xml = "<html>" + document_html + "</html>"
         return xml.etree.cElementTree.fromstring(document_xml.encode("utf-8"))
 
-    def new_websocket(self, **kwargs):
-        """Gets a websocket URL to connect to.
-        """
-        return self._fetch_json("websockets/new", cache=False, **kwargs)
-
 

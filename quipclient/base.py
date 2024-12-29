@@ -91,6 +91,30 @@ class BaseQuipClient:
         self._cache.stats(enable=True)
         self._user_id = None
 
+    def get_authorization_url(self, redirect_uri, state=None):
+        """Returns the URL the user should be redirected to to sign in."""
+        return self._url(
+            "oauth/login", redirect_uri=redirect_uri, state=state,
+            response_type="code", client_id=self.client_id)
+
+    def get_access_token(self, redirect_uri, code,
+                         grant_type="authorization_code",
+                         refresh_token=None):
+        """Exchanges a verification code for an access_token.
+
+        Once the user is redirected back to your server from the URL
+        returned by `get_authorization_url`, you can exchange the `code`
+        argument with this method.
+        """
+        return self._fetch_json(
+            "oauth/access_token", redirect_uri=redirect_uri, code=code,
+            grant_type=grant_type, refresh_token=refresh_token,
+            client_id=self.client_id, client_secret=self.client_secret)
+
+    def get_authenticated_user(self, cache=True, cache_ttl=ONE_HOUR):
+        """Returns the user corresponding to our access token."""
+        return self._fetch_json("users/current", cache=cache, cache_ttl=cache_ttl)
+
     def _fetch_json(self, path, post_data=None, cache=True, cache_ttl=None, 
                    paginate=False, **args):
         """Fetches JSON from the API, handling pagination if requested.
@@ -357,26 +381,8 @@ class BaseQuipClient:
         """Returns a `datetime` for the given microsecond string"""
         return datetime.datetime.utcfromtimestamp(usec / 1000000.0)
 
-    def get_authorization_url(self, redirect_uri, state=None):
-        """Returns the URL the user should be redirected to to sign in."""
-        return self._url(
-            "oauth/login", redirect_uri=redirect_uri, state=state,
-            response_type="code", client_id=self.client_id)
+    def new_websocket(self, **kwargs):
+        """Gets a websocket URL to connect to."""
+        return self._fetch_json("websockets/new", cache=False, **kwargs)
 
-    def get_access_token(self, redirect_uri, code,
-                         grant_type="authorization_code",
-                         refresh_token=None):
-        """Exchanges a verification code for an access_token.
 
-        Once the user is redirected back to your server from the URL
-        returned by `get_authorization_url`, you can exchange the `code`
-        argument with this method.
-        """
-        return self._fetch_json(
-            "oauth/access_token", redirect_uri=redirect_uri, code=code,
-            grant_type=grant_type, refresh_token=refresh_token,
-            client_id=self.client_id, client_secret=self.client_secret)
-
-    def get_authenticated_user(self, cache=True, cache_ttl=ONE_HOUR):
-        """Returns the user corresponding to our access token."""
-        return self._fetch_json("users/current", cache=cache, cache_ttl=cache_ttl)
