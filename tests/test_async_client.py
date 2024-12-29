@@ -1,10 +1,12 @@
 """Tests for async Quip client"""
 
+import asyncio
 import pytest
 import pytest_asyncio
 from aiohttp import web
 from unittest.mock import Mock
 from quipclient.async_client import UserQuipClientAsync
+from quipclient.base import QuipError
 
 @pytest_asyncio.fixture(scope="function")
 async def mock_aiohttp_app(aiohttp_server):
