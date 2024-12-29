@@ -47,7 +47,7 @@ async def mock_quip_client(mock_aiohttp_app):
     await client.close()
 
 
-@pytest.mark.asyncio(loop_scope="function")
+@pytest.mark.asyncio
 async def test_client_initialization():
     """Test basic client initialization"""
     client = UserQuipClientAsync("test_token")

@@ -5,7 +5,7 @@ import pytest_asyncio
 from quipclient.async_client import UserQuipClientAsync
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session", name="async_quip_client")
 async def async_quip_client():
     """Create async Quip client instance using API key from environment"""
     api_key = os.getenv("QUIP_API_KEY")
@@ -22,7 +22,7 @@ async def async_quip_client():
     yield client
     await client.close()
 
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio
 async def test_get_threads_v2_from_shared_folders(async_quip_client):
     """Test getting thread information from shared folders using async client"""
     # Get authenticated user to get shared folders
