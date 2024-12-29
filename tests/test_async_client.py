@@ -6,7 +6,7 @@ from unittest.mock import Mock
 from quipclient.async_client import UserQuipClientAsync
 
 @pytest.fixture
-async def mock_aiohttp_app():
+async def mock_aiohttp_app(aiohttp_server):
     """Create mock aiohttp application"""
     app = web.Application()
     
@@ -24,14 +24,19 @@ async def mock_aiohttp_app():
         )
     
     app.router.add_get("/1/users/current", mock_current_user)
-    return app
+    server = await aiohttp_server(app)
+    return server
 
 @pytest.fixture
-async def mock_quip_client(mock_aiohttp_app, aiohttp_client):
+async def mock_quip_client(mock_aiohttp_app):
     """Create mock Quip client with test server"""
-    client = UserQuipClientAsync("test_token")
-    client._session = await aiohttp_client(mock_aiohttp_app)
-    return client
+    client = UserQuipClientAsync(
+        "test_token",
+        base_url=f"http://{mock_aiohttp_app.host}:{mock_aiohttp_app.port}"
+    )
+    await client.start()
+    yield client
+    await client.close()
 
 @pytest.mark.asyncio
 async def test_client_initialization():
@@ -42,10 +47,12 @@ async def test_client_initialization():
     assert client._session is None
 
 @pytest.mark.asyncio
-async def test_context_manager(mock_aiohttp_app, aiohttp_client):
+async def test_context_manager(mock_aiohttp_app):
     """Test async context manager"""
-    client = UserQuipClientAsync("test_token")
-    client._session = await aiohttp_client(mock_aiohttp_app)
+    client = UserQuipClientAsync(
+        "test_token",
+        base_url=f"http://{mock_aiohttp_app.host}:{mock_aiohttp_app.port}"
+    )
     
     async with client:
         assert client._session is not None
