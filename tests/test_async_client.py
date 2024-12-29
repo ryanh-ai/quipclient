@@ -25,16 +25,14 @@ async def mock_aiohttp_app(aiohttp_server):
         )
     
     app.router.add_get("/1/users/current", mock_current_user)
-    server = await aiohttp_server(app)
-    return server
+    return await aiohttp_server(app)
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def mock_quip_client(mock_aiohttp_app):
     """Create mock Quip client with test server"""
-    server = await mock_aiohttp_app
     client = UserQuipClientAsync(
         "test_token",
-        base_url=f"http://{server.host}:{server.port}"
+        base_url=f"http://{mock_aiohttp_app.host}:{mock_aiohttp_app.port}"
     )
     await client.start()
     yield client
