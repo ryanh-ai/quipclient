@@ -83,11 +83,10 @@ class BaseQuipClient:
         self.base_url = base_url if base_url else "https://platform.quip.com"
         self.request_timeout = request_timeout if request_timeout else 10
         
-        if cache_dir is None:
-            cache_dir = os.path.join(os.getcwd(), '.cache')
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
-        self._cache = Cache(cache_dir)
+        self._cache_dir = cache_dir if cache_dir else os.path.join(os.getcwd(), '.cache')
+        if not os.path.exists(self._cache_dir):
+            os.makedirs(self._cache_dir)
+        self._cache = Cache(self._cache_dir)
         self._cache.stats(enable=True)
         self._user_id = None
 
@@ -294,8 +293,18 @@ class BaseQuipClient:
 
     def _clean(self, **args):
         """Clean and encode parameters for API requests."""
-        return dict((k, str(v) if isinstance(v, int) else v.encode("utf-8"))
-                    for k, v in args.items() if v or isinstance(v, int))
+        def clean_value(v):
+            if isinstance(v, int):
+                return str(v)
+            elif isinstance(v, dict):
+                return json.dumps(v)
+            elif isinstance(v, str):
+                return v.encode("utf-8")
+            return v
+
+        return dict((k, clean_value(v))
+                   for k, v in args.items() 
+                   if v or isinstance(v, int))
 
     def _url(self, path, cursor=None, **args):
         """Construct API URL with parameters."""

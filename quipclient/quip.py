@@ -1,5 +1,6 @@
 from .base import BaseQuipClient, QuipError
 import datetime
+import gzip
 import json
 import logging
 import os
@@ -43,15 +44,27 @@ class QuipClient(BaseQuipClient):
         Otherwise, only `get_authorization_url` and `get_access_token`
         work, and we assume the client is for a server using the Quip API's
         OAuth endpoint.
+
+        Args:
+            access_token: Quip API access token
+            client_id: OAuth client ID
+            client_secret: OAuth client secret
+            base_url: Base URL for API requests
+            request_timeout: Request timeout in seconds
+            cache_dir: Directory for caching responses
         """
-        super().__init__(access_token, client_id, client_secret, 
+        super().__init__(access_token, client_id, client_secret,
                         base_url, request_timeout, cache_dir)
+        
+        # Initialize cache directories
+        self._html_cache_dir = os.path.join(self._cache_dir, "html_content")
+        os.makedirs(self._html_cache_dir, exist_ok=True)
         
         if self.access_token:
             try:
                 self._user_id = self.get_authenticated_user()["id"]
             except:
-                pass
+                self._user_id = None
 
 
     def get_user(self, id, cache=True, cache_ttl=BaseQuipClient.ONE_HOUR):
@@ -206,44 +219,59 @@ class QuipClient(BaseQuipClient):
         
         Args:
             thread_id_or_path: Thread ID or secret path
-            cache: Whether to cache the response (default False)
-            cache_ttl: Cache TTL in seconds (default 1 hour)
+            cache: Whether to cache the response (default True)
+            cache_ttl: Cache TTL in seconds (default 10 days)
             
         Returns:
             Combined results from all pages of HTML content.
         """
         # Try to get complete result from cache first
         if cache:
-            url = self._url(f"2/threads/{thread_id_or_path}/html")
-            cache_key = f"{self._user_id or '_'}:{url}"
-            cached_data = self._cache.get(cache_key)
-            if cached_data:
-                return json.loads(zlib.decompress(cached_data).decode())
-        
+            try:
+                # Get thread metadata first
+                thread_data = self.get_thread_v2(thread_id_or_path, cache=True)
+                thread_usec = thread_data.get("thread", {}).get("updated_usec", 0)
+                cache_file = os.path.join(self._html_cache_dir, f"{thread_id_or_path}_{thread_usec}.gz")
+                
+                if os.path.exists(cache_file):
+                    try:
+                        with gzip.open(cache_file, 'rt') as f:
+                            return json.load(f)
+                    except Exception as e:
+                        logging.warning(f"Failed to read cache file {cache_file}: {e}")
+            except Exception as e:
+                logging.warning(f"Error checking cache for {thread_id_or_path}: {e}")
+
         # If not cached or cache disabled, fetch all pages
         result = {"html": "", "response_metadata": {"next_cursor": ""}}
         cursor = None
         
+        # Fetch HTML pages
         while True:
             page = self._fetch_json(f"2/threads/{thread_id_or_path}/html",
-                                  cursor=cursor, cache=False)
+                                  params={"cursor": cursor} if cursor else None,
+                                  cache=False)
             
             if "html" in page:
                 result["html"] += page["html"]
             
+            if "response_metadata" not in result:
+                result["response_metadata"] = page.get("response_metadata", {})
+            
             cursor = page.get("response_metadata", {}).get("next_cursor")
-            if not cursor:
+            if not cursor or not cursor.strip():
                 break
         
         # Cache the complete result if caching is enabled
         if cache:
-            url = self._url(f"2/threads/{thread_id_or_path}/html")
-            cache_key = f"{self._user_id or '_'}:{url}"
-            self._cache.set(
-                cache_key,
-                zlib.compress(json.dumps(result).encode()),
-                cache_ttl
-            )
+            thread_usec = thread_data.get("thread", {}).get("updated_usec", 0)
+            cache_file = os.path.join(self._html_cache_dir, f"{thread_id_or_path}_{thread_usec}.gz")
+            
+            try:
+                with gzip.open(cache_file, 'wt') as f:
+                    json.dump(result, f)
+            except Exception as e:
+                logging.warning(f"Failed to write cache file {cache_file}: {e}")
                 
         return result
 
