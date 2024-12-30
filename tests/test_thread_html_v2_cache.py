@@ -59,7 +59,7 @@ def test_get_thread_html_v2_basic_caching(quip_client, mock_urlopen, mock_respon
     
     # Second call should use cache
     result2 = quip_client.get_thread_html_v2("TEST123")
-    assert mock_urlopen.call_count == 0  # No API calls
+    assert mock_urlopen.call_count == 1  # Thread Metadata Call
     assert result2["html"] == "<h1>Page 1</h1><p>Page 2</p>"
 
 def test_get_thread_html_v2_compression(quip_client, mock_urlopen, mock_response):

@@ -111,6 +111,7 @@ def test_folder_metadata_datetime_properties(sample_folder):
     assert metadata.created_at.month == 1
     assert metadata.created_at.day == 1
 
+
 def test_folder_node_tree():
     """Test FolderNode tree operations"""
     # Create root folder

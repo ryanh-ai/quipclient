@@ -2,11 +2,10 @@ import pytest
 from unittest.mock import Mock
 from quipclient import QuipClient
 from .test_data.users import BASIC_USER, EMAIL_USER, AUTH_USER
-from .test_data.batch_folders import SIMPLE_FOLDERS, EMPTY_FOLDERS
-from .test_data.batch_threads import SINGLE_THREAD, TWO_THREADS, TWENTY_THREADS, EMPTY_THREADS, BATCH_THREAD_TEST_CASES
 from .test_data.folders import PRIVATE_FOLDER, SHARED_FOLDER
 from .test_data.threads import SIMPLE_THREAD, COMPLEX_THREAD
 from .test_data.blobs import BLOB_TEST_CASES
+from .test_data.batch_data import BATCH_FOLDERS, BATCH_THREADS
 from io import BytesIO
 
 @pytest.mark.parametrize("test_name,test_data", [
@@ -83,10 +82,7 @@ def test_get_blob_variations(quip_client, mock_urlopen, test_name, test_data):
     expected_url = f"{quip_client.base_url}/1/blob/{test_data['thread_id']}/{test_data['blob_id']}"
     assert called_url == expected_url
 
-@pytest.mark.parametrize("test_name,test_data", [
-    ("simple_folders", SIMPLE_FOLDERS),
-    ("empty_folders", EMPTY_FOLDERS)
-])
+@pytest.mark.parametrize("test_name,test_data", BATCH_FOLDERS)
 def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     mock_urlopen.return_value = mock_response(json_data=test_data)
     
@@ -98,7 +94,7 @@ def test_batch_folders_variations(quip_client, mock_urlopen, mock_response, test
         assert result[key]["folder"]["title"] == value["folder"]["title"]
         assert result[key]["folder"]["type"] == value["folder"]["type"]
 
-@pytest.mark.parametrize("test_name,test_data", BATCH_THREAD_TEST_CASES)
+@pytest.mark.parametrize("test_name,test_data", BATCH_THREADS)
 def test_batch_threads_variations(quip_client, mock_urlopen, mock_response, test_name, test_data):
     """Test fetching different batch sizes of threads"""
     mock_urlopen.return_value = mock_response(json_data=test_data)
