@@ -81,7 +81,7 @@ class BaseQuipClient:
         self.client_id = client_id
         self.client_secret = client_secret
         self.base_url = base_url if base_url else "https://platform.quip.com"
-        self.request_timeout = request_timeout if request_timeout else 10
+        self.request_timeout = request_timeout if request_timeout else 100
         
         self._cache_dir = cache_dir if cache_dir else os.path.join(os.getcwd(), '.cache')
         if not os.path.exists(self._cache_dir):
@@ -209,6 +209,7 @@ class BaseQuipClient:
                     result["response_metadata"]["next_cursor"] = ""
                         
             return result
+
 
         except HTTPError as error:
             try:
